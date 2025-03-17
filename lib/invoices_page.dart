@@ -180,7 +180,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
           } else {
             final employeeId = snapshot.data;
             if (employeeId == null) {
-              return const Center(child: Text('Employee ID not set'));
+              return const Center(child: Text('Zaměstnanec nenalezen'));
             }
             return StreamBuilder<List<Invoice>>(
               stream: widget._firestoreService.getInvoices(employeeId),
