@@ -35,7 +35,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Poznámka k fakturě ${invoice.interniCislo} - $action'),
+            title: Text('Poznámka k faktuře ${invoice.interniCislo} - $action'),
             content: TextField(
               controller: noteController,
               decoration: const InputDecoration(hintText: 'Zadejte poznámku'),
