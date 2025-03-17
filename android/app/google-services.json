@@ -1,0 +1,135 @@
+{
+  "project_info": {
+    "project_number": "105671713030",
+    "firebase_url": "https://ainhelios-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ainhelios",
+    "storage_bucket": "ainhelios.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:105671713030:android:c6bb3ed3d97d4c18c27e87",
+        "android_client_info": {
+          "package_name": "com.example.ain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "105671713030-tn682ujv7mh0ja708h2e86ggcil4k6jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpieeIKO38LSA1QT17VKsaGzlBxlVml_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "105671713030-6io4meiv266jio3966ajm6g39pl7oaf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:105671713030:android:5cc3659d42c0584ac27e87",
+        "android_client_info": {
+          "package_name": "com.example.autoinak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "105671713030-ec7erhdficd3uv9uiph97aqt8s9ad9mn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.autoinak",
+            "certificate_hash": "6bda1ff69c936afedcac13c406ddece28e215d45"
+          }
+        },
+        {
+          "client_id": "105671713030-tn682ujv7mh0ja708h2e86ggcil4k6jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpieeIKO38LSA1QT17VKsaGzlBxlVml_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "105671713030-6io4meiv266jio3966ajm6g39pl7oaf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:105671713030:android:4c64967da82b9eaec27e87",
+        "android_client_info": {
+          "package_name": "com.example.autoinak2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "105671713030-tn682ujv7mh0ja708h2e86ggcil4k6jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpieeIKO38LSA1QT17VKsaGzlBxlVml_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "105671713030-6io4meiv266jio3966ajm6g39pl7oaf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:105671713030:android:a6a67f886e2fc2f9c27e87",
+        "android_client_info": {
+          "package_name": "com.example.autoinak5"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "105671713030-tn682ujv7mh0ja708h2e86ggcil4k6jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpieeIKO38LSA1QT17VKsaGzlBxlVml_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "105671713030-6io4meiv266jio3966ajm6g39pl7oaf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
