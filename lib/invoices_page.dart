@@ -193,7 +193,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 }
                 final invoices = snapshot.data;
                 if (invoices == null || invoices.isEmpty) {
-                  return const Center(child: Text('No invoices found'));
+                  return const Center(child: Text('Žádné faktury nenalezeny'));
                 }
                 return ListView.builder(
                   itemCount: invoices.length,
