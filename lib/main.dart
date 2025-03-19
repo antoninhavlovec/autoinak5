@@ -6,6 +6,17 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 import 'invoices_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+/// Autor: Antonín Havlovec
+///
+/// verze 20250317
+///   napojení na GIT
+///   1.git status (zkontrolovat stav)
+///   2.git add . (přidat soubory do staging area)
+///   3.git commit -m "20250317" (vytvořit verzi)
+///   4.git branch -M main (Nastavit výchozí větev)
+///   5.git push -u origin main (nahrát na GitHub)
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,19 +73,25 @@ class _MyHomePageState extends State<MyHomePage> {
     if (showInvoices) {
       newChildren.add(InvoicesPage());
       newBottomNavBarItems.add(
-        const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Faktury'),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset('asset/icons/invoice.svg',width: 32,height: 32), // Použití vlastní ikony
+          label: 'Faktury',
+        ),
       );
     }
 
     newChildren.add(ZadankyPage());
     newBottomNavBarItems.add(
-      const BottomNavigationBarItem(icon: Icon(Icons.mail), label: 'Žádanky'),
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset('asset/icons/vacation.svg',width: 32,height: 32), // Použití vlastní ikony
+        label: 'Žádanky',
+      ),
     );
 
     newChildren.add(DochazkaPage());
     newBottomNavBarItems.add(
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person),
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset('asset/icons/availability.svg',width: 32,height: 32), // Použití vlastní ikony
         label: 'Docházka',
       ),
     );

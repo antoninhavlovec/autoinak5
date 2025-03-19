@@ -224,8 +224,9 @@ class FirestoreService {
     );
     try {
       await _db.collection('faktury').doc(invoiceId).update({
-        'stavSchvalovani': 'Schvaleno',
+        'stavSchvalovani': 'Schváleno',
         'poznamkaSchvalovatele': poznamkaSchvalovatele,
+        'datumSchvaleni': FieldValue.serverTimestamp(), // Přidání timestampu
       });
     } catch (e) {
       print('Error approving invoice: $e');
@@ -244,6 +245,7 @@ class FirestoreService {
       await _db.collection('faktury').doc(invoiceId).update({
         'stavSchvalovani': 'Zamítnuto',
         'poznamkaSchvalovatele': poznamkaSchvalovatele,
+        'datumZamintnuti': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       print('Error rejecting invoice: $e');
@@ -262,6 +264,7 @@ class FirestoreService {
       await _db.collection('faktury').doc(invoiceId).update({
         'stavSchvalovani': 'Vráceno',
         'poznamkaSchvalovatele': poznamkaSchvalovatele,
+        'datumVraceni': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       print('Error returning invoice: $e');

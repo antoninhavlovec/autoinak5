@@ -35,36 +35,36 @@ class _InvoicesPageState extends State<InvoicesPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Poznámka k faktuře ${invoice.interniCislo} - $action'),
-            content: TextField(
-              controller: noteController,
-              decoration: const InputDecoration(hintText: 'Zadejte poznámku'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Zrušit'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final note = noteController.text;
-                  switch (action) {
-                    case 'Schváleno':
-                      widget._firestoreService.approveInvoice(invoice.id, note);
-                      break;
-                    case 'Zamítnuto':
-                      widget._firestoreService.rejectInvoice(invoice.id, note);
-                      break;
-                    case 'Vráceno':
-                      widget._firestoreService.returnInvoice(invoice.id, note);
-                      break;
-                  }
-                  Navigator.pop(context); // Zavření dialogu s poznámkou
-                },
-                child: const Text('Potvrdit'),
-              ),
-            ],
+        title: Text('Poznámka k faktuře ${invoice.interniCislo} - $action'),
+        content: TextField(
+          controller: noteController,
+          decoration: const InputDecoration(hintText: 'Zadejte poznámku'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Zrušit'),
           ),
+          TextButton(
+            onPressed: () {
+              final note = noteController.text;
+              switch (action) {
+                case 'Schváleno':
+                  widget._firestoreService.approveInvoice(invoice.id, note);
+                  break;
+                case 'Zamítnuto':
+                  widget._firestoreService.rejectInvoice(invoice.id, note);
+                  break;
+                case 'Vráceno':
+                  widget._firestoreService.returnInvoice(invoice.id, note);
+                  break;
+              }
+              Navigator.pop(context); // Zavření dialogu s poznámkou
+            },
+            child: const Text('Potvrdit'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -74,36 +74,36 @@ class _InvoicesPageState extends State<InvoicesPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Poznámka k hromadné akci - $action'),
-            content: TextField(
-              controller: noteController,
-              decoration: const InputDecoration(hintText: 'Zadejte poznámku'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Zrušit'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final note = noteController.text;
-                  switch (action) {
-                    case 'Schvaleno':
-                      _approveSelectedInvoices(note);
-                      break;
-                    case 'Zamítnuto':
-                      _rejectSelectedInvoices(note);
-                      break;
-                    case 'Vráceno':
-                      _returnSelectedInvoices(note);
-                      break;
-                  }
-                  Navigator.pop(context);
-                },
-                child: const Text('Potvrdit'),
-              ),
-            ],
+        title: Text('Poznámka k hromadné akci - $action'),
+        content: TextField(
+          controller: noteController,
+          decoration: const InputDecoration(hintText: 'Zadejte poznámku'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Zrušit'),
           ),
+          TextButton(
+            onPressed: () {
+              final note = noteController.text;
+              switch (action) {
+                case 'Schvaleno':
+                  _approveSelectedInvoices(note);
+                  break;
+                case 'Zamítnuto':
+                  _rejectSelectedInvoices(note);
+                  break;
+                case 'Vráceno':
+                  _returnSelectedInvoices(note);
+                  break;
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Potvrdit'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -154,19 +154,19 @@ class _InvoicesPageState extends State<InvoicesPage> {
               },
               itemBuilder:
                   (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'Schvaleno',
-                      child: Text('Schválit vybrané'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'Zamítnuto',
-                      child: Text('Zamítnout vybrané'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'Vráceno',
-                      child: Text('Vrátit vybrané'),
-                    ),
-                  ],
+                const PopupMenuItem<String>(
+                  value: 'Schvaleno',
+                  child: Text('Schválit vybrané'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Zamítnuto',
+                  child: Text('Zamítnout vybrané'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Vráceno',
+                  child: Text('Vrátit vybrané'),
+                ),
+              ],
             ),
         ],
       ),
@@ -200,125 +200,170 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   itemBuilder: (context, index) {
                     final invoice = invoices[index];
                     final formattedDatumSplatnosti =
-                        invoice.datumSplatnosti != null
-                            ? DateFormat(
-                              'dd.MM.yyyy',
-                            ).format(invoice.datumSplatnosti!)
-                            : 'N/A';
-                    return ListTile(
-                      leading: Checkbox(
-                        value: _selectedInvoices.contains(invoice.id),
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              _selectedInvoices.add(invoice.id);
-                            } else {
-                              _selectedInvoices.remove(invoice.id);
-                            }
-                          });
-                        },
-                      ),
-                      title: Text(invoice.interniCislo),
-                      subtitle: Text(
-                        '${invoice.orgNazev} - $formattedDatumSplatnosti',
-                      ),
-                      trailing: Text(
-                        '${invoice.cenaCelkem != null ? invoice.cenaCelkem.toString() : "N/A"} Kč',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onTap: () {
-                        // Kliknutí na fakturu pro zobrazení detailů
-                        showDialog(
-                          context: context,
-                          builder:
-                              (_) => AlertDialog(
-                                title: Text(
-                                  'Detaily faktury: ${invoice.interniCislo}',
-                                ),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Organizace: ${invoice.orgNazev}'),
-                                      Text('IČO: ${invoice.orgIco}'),
-                                      Text(
-                                        'Datum splatnosti: ${formattedDatumSplatnosti}',
-                                      ),
-                                      Text(
-                                        'Stav schvalování: ${invoice.stavSchvalovani}',
-                                      ),
-                                      Text(
-                                        'Cena: ${invoice.cenaCelkem != null ? invoice.cenaCelkem.toString() : "N/A"}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
+                    invoice.datumSplatnosti != null
+                        ? DateFormat(
+                      'dd.MM.yyyy',
+                    ).format(invoice.datumSplatnosti!)
+                        : 'N/A';
+                    final formattedCenaCelkem = invoice.cenaCelkem != null
+                        ? NumberFormat("#,###", "cs_CZ")
+                        .format(invoice.cenaCelkem)
+                        .replaceAll(",", " ")
+                        : "N/A"; //Kód pro formátování
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0), //Zmenšení horizontálního paddingu
+                      child: Column( // Zde jsme obalili GestureDetector a Divider do Column
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              // Kliknutí na fakturu pro zobrazení detailů
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (_) => AlertDialog(
+                                  title: Text(
+                                    'Detaily faktury: ${invoice.interniCislo}',
+                                  ),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Organizace: ${invoice.orgNazev}'),
+                                        Text('IČO: ${invoice.orgIco}'),
+                                        Text(
+                                          'Datum splatnosti: ${formattedDatumSplatnosti}',
                                         ),
-                                      ),
-                                      Text(
-                                        'Poznámka: ${invoice.poznamka ?? ''}',
-                                      ),
-                                    ],
+                                        Text(
+                                          'Stav schvalování: ${invoice.stavSchvalovani}',
+                                        ),
+                                        Text(
+                                          'Cena: $formattedCenaCelkem Kč',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Poznámka: ${invoice.poznamka ?? ''}',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Future.delayed(
+                                          Duration(milliseconds: 100),
+                                              () {
+                                            _showNoteDialog(
+                                              context,
+                                              invoice,
+                                              'Schváleno',
+                                            );
+                                          },
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Schválit'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        //                                      Navigator.pop(context);
+                                        Future.delayed(
+                                          Duration(milliseconds: 100),
+                                              () {
+                                            _showNoteDialog(
+                                              context,
+                                              invoice,
+                                              'Zamítnuto',
+                                            );
+                                          },
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Zamítnout'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        //                                      Navigator.pop(context);
+                                        Future.delayed(
+                                          Duration(milliseconds: 100),
+                                              () {
+                                            _showNoteDialog(
+                                              context,
+                                              invoice,
+                                              'Vráceno',
+                                            );
+                                          },
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Vrátit'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: Row( // Zde je kód pro Row
+                              children: [
+                                Padding( // Zde přidáváme odsazení checkboxu
+                                  padding: EdgeInsets.only(left: 0.0), //Nastavujeme odsazení zleva
+                                  child: SizedBox(
+                                    width: 40, // Nastavení pevné šířky pro Checkbox
+                                    child: Checkbox(
+                                      value: _selectedInvoices.contains(invoice.id),
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          if (value == true) {
+                                            _selectedInvoices.add(invoice.id);
+                                          } else {
+                                            _selectedInvoices.remove(invoice.id);
+                                          }
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Future.delayed(
-                                        Duration(milliseconds: 100),
-                                        () {
-                                          _showNoteDialog(
-                                            context,
-                                            invoice,
-                                            'Schváleno',
-                                          );
-                                        },
-                                      );
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Schválit'),
+                                Expanded(
+                                  child: Padding(// Obalení Columnu widgetem Padding
+                                    padding: const EdgeInsets.only(left: 0.0), // Odsazení z leva
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(invoice.orgNazev,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            )
+                                        ),
+                                        Text(invoice.interniCislo),
+                                        Text(
+                                          'Splat.: $formattedDatumSplatnosti',
+                                        ),
+                                        if (invoice.poznamka != null && invoice.poznamka!.isNotEmpty)
+                                          Text('Poz: ${invoice.poznamka}'),
+                                      ],
+                                    ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      Future.delayed(
-                                        Duration(milliseconds: 100),
-                                        () {
-                                          _showNoteDialog(
-                                            context,
-                                            invoice,
-                                            'Zamítnuto',
-                                          );
-                                        },
-                                      );
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Zamítnout'),
+                                ),
+                                Padding( // Přidali jsme Padding
+                                  padding: const EdgeInsets.only(right: 15.0), // Upravujeme odsazení zprava na 0.0
+                                  child:Text(
+                                    '$formattedCenaCelkem Kč',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      Future.delayed(
-                                        Duration(milliseconds: 100),
-                                        () {
-                                          _showNoteDialog(
-                                            context,
-                                            invoice,
-                                            'Vráceno',
-                                          );
-                                        },
-                                      );
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Vrátit'),
-                                  ),
-                                ],
-                              ),
-                        );
-                      },
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(), // Přidali jsme Divider
+                        ],
+                      ),
                     );
+                    return null;
                   },
                 );
               },
