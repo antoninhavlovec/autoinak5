@@ -37,8 +37,10 @@ dependencies:
   shared_preferences: ^2.2.3
   cloud_firestore: ^5.6.5
   firebase_core: ^3.12.1
-  intl: ^0.18.1
+  intl: ^0.20.2
   flutter_svg: ^2.0.10+1
+  flutter_native_splash: ^2.0.0
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -51,10 +53,13 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+flutter_launcher_icons:
+  android: "launcher_icon"  # Název souboru ikony pro Android (bez přípony)
+  ios: true
+  image_path: "asset/icons/logo AIN 1024p.png"  # Cesta k obrázku ikony
+  min_sdk_android:
+  remove_alpha_ios: true
 
-# The following section is specific to Flutter packages.
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -94,3 +99,5 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   assets:
     - asset/icons/
+    - asset/logo/
+    - asset/pict/

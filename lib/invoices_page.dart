@@ -138,7 +138,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Faktury'),
+//        title: const Text('Faktury'),
+        title: Image.asset('asset/pict/faktury.png', height: 15),
+        backgroundColor: Color(0xFFCBEAFF),
         actions: [
           IconButton(
             icon: const Icon(Icons.bug_report),
@@ -182,8 +184,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
             if (employeeId == null) {
               return const Center(child: Text('Zaměstnanec nenalezen'));
             }
-            return StreamBuilder<List<Invoice>>(
-              stream: widget._firestoreService.getInvoices(employeeId),
+            return StreamBuilder<(List<Invoice>, int)>(
+              stream: widget._firestoreService.getInvoicesWithCount(employeeId),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
@@ -191,10 +193,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final invoices = snapshot.data;
-                if (invoices == null || invoices.isEmpty) {
+                final data = snapshot.data;
+                if (data == null || data.$1.isEmpty) {
                   return const Center(child: Text('Žádné faktury nenalezeny'));
                 }
+                final invoices = data.$1; // Přístup k seznamu faktur pomocí data.$1
                 return ListView.builder(
                   itemCount: invoices.length,
                   itemBuilder: (context, index) {
@@ -211,7 +214,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
                         .replaceAll(",", " ")
                         : "N/A"; //Kód pro formátování
                     return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0), //Zmenšení horizontálního paddingu
+                      padding: EdgeInsets.symmetric(horizontal: 04.0, vertical: 02.0), //Zmenšení horizontálního paddingu
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 02.0, vertical: 02.0), // Zde nastavíme odsazení okraje
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey, // Barva okraje
+                            width: 1.0, // Šířka okraje
+                        ),
+                        borderRadius: BorderRadius.circular(10.0), // Kulaté rohy
+                      ),
                       child: Column( // Zde jsme obalili GestureDetector a Divider do Column
                         children: [
                           GestureDetector(
@@ -232,7 +244,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                         Text('Organizace: ${invoice.orgNazev}'),
                                         Text('IČO: ${invoice.orgIco}'),
                                         Text(
-                                          'Datum splatnosti: ${formattedDatumSplatnosti}',
+                                          'Datum splatnosti: $formattedDatumSplatnosti',
                                         ),
                                         Text(
                                           'Stav schvalování: ${invoice.stavSchvalovani}',
@@ -336,7 +348,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                               fontSize: 16,
                                             )
                                         ),
-                                        Text(invoice.interniCislo),
+                                        Text('Č. fak.: ${invoice.interniCislo}'),
                                         Text(
                                           'Splat.: $formattedDatumSplatnosti',
                                         ),
@@ -359,9 +371,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
                               ],
                             ),
                           ),
-                          Divider(), // Přidali jsme Divider
+//                          Divider(), // Přidali jsme Divider
                         ],
                       ),
+                      )
                     );
                     return null;
                   },

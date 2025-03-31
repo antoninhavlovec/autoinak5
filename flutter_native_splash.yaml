@@ -1,0 +1,16 @@
+flutter_native_splash:
+  # Celoobrazovkové pozadí pro všechny verze Androidu a iOS:
+  background_image: "asset/logo/logo pouze AUTO IN 1152p.png"
+  color: "#ffffff"
+  android_12:
+    image: "asset/logo/logo pouze AUTO IN 1152p.png"
+    icon_background_color: "#ffffff"
+    # background_image už není potřeba, protože používáme globální background_image
+  # Android specific options
+  android: true
+  # iOS specific options
+  ios: true
+  # Poznámka: Odkomentované řádky pro ruční spouštění jsou v pořádku
+
+#flutter pub run flutter_native_splash:create
+#flutter build appbundle

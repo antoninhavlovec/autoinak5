@@ -4,11 +4,13 @@ import 'package:autoinak5/models/zadanka.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'nova_zadanka_page.dart';
+import '../services/firestore_service.dart';
 
 class ZadankyPage extends StatefulWidget {
   final FirestoreService _firestoreService = FirestoreService();
+  final VoidCallback onRequestsChanged; // Přidán callback
 
-  ZadankyPage({super.key});
+  ZadankyPage({Key? key, required this.onRequestsChanged}) : super(key: key);
 
   @override
   State<ZadankyPage> createState() => _ZadankyPageState();
@@ -128,6 +130,7 @@ class _ZadankyPageState extends State<ZadankyPage> {
     setState(() {
       _selectedZadanky.clear();
     });
+    widget.onRequestsChanged(); // Zavolání callbacku
   }
 
   void _rejectSelectedZadanky(String note) {
@@ -137,6 +140,7 @@ class _ZadankyPageState extends State<ZadankyPage> {
     setState(() {
       _selectedZadanky.clear();
     });
+    widget.onRequestsChanged(); // Zavolání callbacku
   }
 
   @override
@@ -145,7 +149,10 @@ class _ZadankyPageState extends State<ZadankyPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Žádanky'),
+          //          title: const Text('Žádanky'),
+          title: Image.asset('asset/pict/zadanky.png', height: 15),
+          //          backgroundColor: Color(0xFFfdf2cf),
+          backgroundColor: Color(0xFFCBEAFF),
           bottom: const TabBar(
             tabs: [Tab(text: 'Moje žádanky'), Tab(text: 'Ke schválení')],
           ),
@@ -211,14 +218,28 @@ class _ZadankyPageState extends State<ZadankyPage> {
                         ).format(DateTime.parse(zadanka.datumDo));
                         return ListTile(
                           visualDensity: VisualDensity.compact,
-                          minVerticalPadding: 0, // Přidáno: Minimální vertikální padding
+                          minVerticalPadding:
+                              0, // Přidáno: Minimální vertikální padding
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
+                            horizontal: 06.0,
+                            vertical: 2.0,
                           ),
                           title: Container(
-                            color: _getStatusColor(zadanka.status),
-                            padding: const EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 09.0,
+                              vertical: 02.0,
+                            ), //Zmenšení horizontálního paddingu
+
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(zadanka.status),
+                              border: Border.all(
+                                color: Colors.grey, // Barva okraje
+                                width: 1.0, // Šířka okraje
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                10.0,
+                              ), // Kulaté rohy
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
@@ -276,8 +297,8 @@ class _ZadankyPageState extends State<ZadankyPage> {
             // Ke schválení
             _employeeId == null
                 ? const Center(child: CircularProgressIndicator())
-                : StreamBuilder<List<Zadanka>>(
-                  stream: widget._firestoreService.getZadankyToApprove(
+                : StreamBuilder<(List<Zadanka>, int)>(
+                  stream: widget._firestoreService.getZadankyWithCount(
                     _employeeId!,
                   ),
                   builder: (context, snapshot) {
@@ -287,12 +308,14 @@ class _ZadankyPageState extends State<ZadankyPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    final zadanky = snapshot.data;
-                    if (zadanky == null || zadanky.isEmpty) {
-                      return const Center(
-                        child: Text('Žádné žádanky ke schválení'),
-                      );
+                    final data =
+                        snapshot.data; // Získání dat (tuple: (List<Zadanka>, int))
+                    if (data == null || data.$1.isEmpty) {
+                      // Kontrola prázdného seznamu
+                      return const Center(child: Text('Žádné žádanky'));
                     }
+                    final zadanky = data.$1; // Získání seznamu žádostí
+                    final count = data.$2; // Získání počtu (pokud chceš zobrazit)
                     return ListView.separated(
                       itemCount: zadanky.length,
                       separatorBuilder: (BuildContext context, int index) {
@@ -306,152 +329,193 @@ class _ZadankyPageState extends State<ZadankyPage> {
                         final formattedDatumDo = DateFormat(
                           'dd.MM.yyyy',
                         ).format(DateTime.parse(zadanka.datumDo));
-                        return ListTile(
-                          visualDensity: VisualDensity.compact,
-                          minVerticalPadding: 0, // Přidáno: Minimální vertikální padding
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          leading: Checkbox(
-                            value: _selectedZadanky.contains(zadanka.id),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                if (value == true) {
-                                  _selectedZadanky.add(zadanka.id);
-                                } else {
-                                  _selectedZadanky.remove(zadanka.id);
-                                }
-                              });
-                            },
-                          ),
-                          title: Container(
-//                            color: _getStatusColor(zadanka.status),
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '$formattedDatumOd - $formattedDatumDo',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 5.0,
+                            vertical: 2.0,
+                          ), // Přidali jsme Padding
+                          child: GestureDetector(
+                            // Přidali jsme GestureDetector
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (detailContext) => AlertDialog(
+                                      title: Text(
+                                        'Detaily žádanky: ${zadanka.zadankaId}',
+                                      ),
+                                      content: SingleChildScrollView(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Typ: ${zadanka.typZadanky}'),
+                                            Text(
+                                              'Zaměstnanec: ${zadanka.zamestnanecJmeno}',
+                                            ),
+                                            Text('Datum od: $formattedDatumOd'),
+                                            Text('Datum do: $formattedDatumDo'),
+                                            Text(
+                                              'Dny čerpání: ${zadanka.dnyCerpani}',
+                                            ),
+                                            Text(
+                                              'Půl dne od: ${zadanka.pulDneOd}',
+                                            ),
+                                            Text(
+                                              'Půl dne do: ${zadanka.pulDneDo}',
+                                            ),
+                                            Text(
+                                              'Poznámka: ${zadanka.poznamka ?? ''}',
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      Text(
-                                        'Typ: ${zadanka.typZadanky}',
-                                        style: const TextStyle(fontSize: 12),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Future.delayed(
+                                              Duration(milliseconds: 10),
+                                              () {
+                                                _showNoteDialog(
+                                                  context,
+                                                  zadanka,
+                                                  'Schvaleno',
+                                                );
+                                              },
+                                            );
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Schválit'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Future.delayed(
+                                              Duration(milliseconds: 10),
+                                              () {
+                                                _showNoteDialog(
+                                                  context,
+                                                  zadanka,
+                                                  'Zamítnuto',
+                                                );
+                                              },
+                                            );
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Zamítnout'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(detailContext);
+                                          },
+                                          child: const Text('Zavřít'),
+                                        ),
+                                      ],
+                                    ),
+                              );
+                            },
+                            child: Container(
+                              // Přidali jsme Container
+                              decoration: BoxDecoration(
+//                                color: _getStatusColor(zadanka.status),
+                                border: Border.all(
+                                  color: Colors.grey, // Barva okraje
+                                  width: 1.0, // Šířka okraje
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  10.0,
+                                ), // Kulaté rohy
+                              ),
+                              child: Row(
+                                // Přidali jsme Row
+                                children: [
+                                  Padding(
+                                    // Přidali jsme Padding
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 0.0,
+                                      vertical: 9.0,
+                                    ), // Nastavujeme odsazení zleva
+                                    child: SizedBox(
+                                      width:
+                                          40, // Nastavení pevné šířky pro Checkbox
+                                      child: Checkbox(
+                                        value: _selectedZadanky.contains(
+                                          zadanka.id,
+                                        ),
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            if (value == true) {
+                                              _selectedZadanky.add(zadanka.id);
+                                            } else {
+                                              _selectedZadanky.remove(
+                                                zadanka.id,
+                                              );
+                                            }
+                                          });
+                                        },
                                       ),
-                                      Text(
-                                        'Poznámka: ${zadanka.poznamka ?? ''}',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      'Dny čerpání: ${zadanka.dnyCerpani}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder:
-                                  (detailContext) => AlertDialog(
-                                    title: Text(
-                                      'Detaily žádanky: ${zadanka.zadankaId}',
-                                    ),
-                                    content: SingleChildScrollView(
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 0.0,
+                                        vertical: 5.0,
+                                      ), //Zmenšení horizontálního paddingu
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('Typ: ${zadanka.typZadanky}'),
                                           Text(
-                                            'Zaměstnanec: ${zadanka.zamestnanecJmeno}',
-                                          ),
-                                          Text('Datum od: $formattedDatumOd'),
-                                          Text('Datum do: $formattedDatumDo'),
-                                          Text(
-                                            'Dny čerpání: ${zadanka.dnyCerpani}',
+                                            zadanka.zamestnanecJmeno,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           Text(
-                                            'Půl dne od: ${zadanka.pulDneOd}',
+                                            '$formattedDatumOd - $formattedDatumDo',
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           Text(
-                                            'Půl dne do: ${zadanka.pulDneDo}',
+                                            'Typ: ${zadanka.typZadanky}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
                                           ),
                                           Text(
                                             'Poznámka: ${zadanka.poznamka ?? ''}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          /*_showNoteDialog(
-                                            context,
-                                            zadanka,
-                                            'Schvaleno',
-                                          );*/
-                                          Future.delayed(
-                                            Duration(milliseconds: 10),
-                                            () {
-                                              _showNoteDialog(
-                                                context,
-                                                zadanka,
-                                                'Schvaleno',
-                                              );
-                                            },
-                                          );
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Schválit'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          /*_showNoteDialog(
-                                            context,
-                                            zadanka,
-                                            'Schvaleno',
-                                          );*/
-                                          Future.delayed(
-                                            Duration(milliseconds: 10),
-                                            () {
-                                              _showNoteDialog(
-                                                context,
-                                                zadanka,
-                                                'Zamítnuto',
-                                              );
-                                            },
-                                          );
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Zamítnout'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(detailContext);
-                                        },
-                                        child: const Text('Zavřít'),
-                                      ),
-                                    ],
                                   ),
-                            );
-                          },
+                                  Padding(
+                                    // Přidali jsme Padding
+                                    padding: const EdgeInsets.only(
+                                      right: 10.0,
+                                    ), // Odsazení zprava
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Dny čerpání: ${zadanka.dnyCerpani}',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         );
                       },
                     );

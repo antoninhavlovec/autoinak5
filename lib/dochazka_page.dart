@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models/dochazka.dart';
 
 class DochazkaPage extends StatefulWidget {
-  const DochazkaPage({Key? key}) : super(key: key);
+  const DochazkaPage({super.key});
 
   @override
   _DochazkaPageState createState() => _DochazkaPageState();
@@ -21,8 +21,8 @@ class _DochazkaPageState extends State<DochazkaPage> {
     '4350224': 'Oběd',
     '4490151': 'Lékař',
     '4486460': 'Školení',
-    '4350225': 'Přestávka',
-    '4350223': 'Příchod-Odchod',
+    '4350225': 'Pauza',
+    '4350223': 'Příchod/Odchod',
   };
   Dochazka? currentDochazka;
 
@@ -57,10 +57,6 @@ class _DochazkaPageState extends State<DochazkaPage> {
               Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
               print('map[datumOd]: ${map['datumOd']}');
               print('map[datumDo]: ${map['datumDo']}');
-              print('map[datumOd] is String: ${map['datumOd'] is String}');
-              print(
-                'map[datumOd] is Timestamp: ${map['datumOd'] is Timestamp}',
-              );
             }
             setState(() {
               dochazkaList =
@@ -145,7 +141,11 @@ class _DochazkaPageState extends State<DochazkaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Docházka')),
+//      appBar: AppBar(title: const Text('Docházka')),
+      appBar: AppBar(
+        title: Image.asset('asset/pict/dochazka.png', height: 15),
+        backgroundColor: Color(0xFFDAF7A6),
+      ),
       body: Column(
         children: [
           // Zobrazení aktuálního stavu
@@ -177,15 +177,20 @@ class _DochazkaPageState extends State<DochazkaPage> {
               itemBuilder: (context, index) {
                 Dochazka dochazka = dochazkaList[index];
                 return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 06.0,
+                    vertical: 2.0,
+                  ),
+
                   title: Text(dochazka.nazevPodkladu),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Od: ${formatDate(dochazka.getDatumOdAsDateTime())}'), // Správné volání metody
                       if (dochazka.datumDo != null)
                         Text(
-                          'Do: ${formatDate(dochazka.getDatumDoAsDateTime())}',
-                        ), // Použijeme metodu formatDate()
+                          'Od: ${formatDate(dochazka.getDatumOdAsDateTime())} - Do: ${formatDate(dochazka.getDatumDoAsDateTime())}',
+                        )
+                      else Text('Od: ${formatDate(dochazka.getDatumOdAsDateTime())}'),// Použijeme metodu formatDate()
                       Text('employeeId: ${dochazka.firestoreId}'),
                     ],
                   ),
@@ -215,11 +220,11 @@ class _DochazkaPageState extends State<DochazkaPage> {
                       );
                     }
                   },
-                  child: Text(entry.value),
                   backgroundColor:
                       currentDochazka?.podklad == entry.key
                           ? Colors.red
-                          : Colors.green,
+                          : Colors.blue[200],
+                  child: Text(entry.value),
                 ),
               );
             }).toList(),

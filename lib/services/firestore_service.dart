@@ -36,6 +36,24 @@ class FirestoreService {
     }
   }
 
+  /*nové metody*/
+  Stream<(List<Zadanka>, int)> getZadankyWithCount(int employeeId) {
+    return _db
+        .collection('zadanky')
+        .where('schvalovateId', isEqualTo: employeeId)
+        .where('odeslano', isEqualTo: 'Ano')
+        .where('schvaleno', isEqualTo: 'Ne')
+        .where('zruseno', isEqualTo: 'Ne')
+        .snapshots()
+        .map((snapshot) {
+      final zadanky = snapshot.docs
+          .map((doc) => Zadanka.fromMap(doc.data() as Map<String, dynamic>, doc.id)) // Přidáno explicitní přetypování
+          .toList();
+      return (zadanky, snapshot.size);
+    });
+  }
+
+  /*Stara metoda*/
   Stream<List<Zadanka>> getZadankyToApprove(int employeeId) {
     print('getZadankyToApprove called');
     try {
@@ -78,22 +96,22 @@ class FirestoreService {
           .orderBy('datumOd', descending: true)
           .snapshots()
           .map((snapshot) {
-        print('snapshot received, ${snapshot.docs.length} documents');
-        if (snapshot.docs.isEmpty) {
-          print('no documents found');
-        }
-        return snapshot.docs.map((doc) {
-          print('mapping document: ${doc.id}');
-          try {
-            final dochazka = Dochazka.fromMap(doc.data(), doc.id);
-            print('mapped dochazka: ${dochazka.firestoreId}');
-            return dochazka;
-          } catch (e) {
-            print('error mapping document: ${doc.id}, error: $e');
-            rethrow;
-          }
-        }).toList();
-      });
+            print('snapshot received, ${snapshot.docs.length} documents');
+            if (snapshot.docs.isEmpty) {
+              print('no documents found');
+            }
+            return snapshot.docs.map((doc) {
+              print('mapping document: ${doc.id}');
+              try {
+                final dochazka = Dochazka.fromMap(doc.data(), doc.id);
+                print('mapped dochazka: ${dochazka.firestoreId}');
+                return dochazka;
+              } catch (e) {
+                print('error mapping document: ${doc.id}, error: $e');
+                rethrow;
+              }
+            }).toList();
+          });
     } catch (e) {
       print('error getting dochazka: $e');
       rethrow;
@@ -109,6 +127,7 @@ class FirestoreService {
       rethrow;
     }
   }
+
   Future<void> endDochazka(String dochazkaId) async {
     print('endDochazka called with id: $dochazkaId');
     try {
@@ -157,40 +176,26 @@ class FirestoreService {
     }
   }
 
-  Stream<List<Invoice>> getInvoices(int employeeId) {
-    print('getInvoices called');
-    try {
-      return _db
-          .collection('faktury')
-          .where('stavSchvalovani', isEqualTo: 'Připraveno')
-          .where(
-            Filter.or(
-              Filter('prvniSchvalovatelId', isEqualTo: employeeId),
-              Filter('druhySchvalovatelId', isEqualTo: employeeId),
-            ),
-          )
-          .snapshots()
-          .map((snapshot) {
-            print('snapshot received, ${snapshot.docs.length} documents');
-            if (snapshot.docs.isEmpty) {
-              print('no documents found');
-            }
-            return snapshot.docs.map((doc) {
-              print('mapping document: ${doc.id}');
-              try {
-                final invoice = Invoice.fromMap(doc.data(), doc.id);
-                print('mapped invoice: ${invoice.interniCislo}');
-                return invoice;
-              } catch (e) {
-                print('error mapping document: ${doc.id}, error: $e');
-                rethrow;
-              }
-            }).toList();
-          });
-    } catch (e) {
-      print('error getting invoices: $e');
-      rethrow;
-    }
+
+
+  Stream<(List<Invoice>, int)> getInvoicesWithCount(int employeeId) {
+    return _db
+        .collection('faktury')
+        .where(
+          Filter.or(
+            Filter('prvniSchvalovatelId', isEqualTo: employeeId),
+            Filter('druhySchvalovatelId', isEqualTo: employeeId),
+          ),
+        )
+        .where('stavSchvalovani', isEqualTo: 'Připraveno')
+        .snapshots()
+        .map((snapshot) {
+          final invoices =
+              snapshot.docs
+                  .map((doc) => Invoice.fromMap(doc.data(), doc.id))
+                  .toList();
+          return (invoices, snapshot.size);
+        });
   }
 
   /// 🔍 **Debugovací metoda pro ruční kontrolu dat**
@@ -275,7 +280,9 @@ class FirestoreService {
   Future<String> createZadanka(Map<String, dynamic> zadankaData) async {
     print('createZadanka called with data: $zadankaData');
     try {
-      DocumentReference docRef = await _db.collection('zadanky').add(zadankaData);
+      DocumentReference docRef = await _db
+          .collection('zadanky')
+          .add(zadankaData);
       String zadankaId = docRef.id;
       await docRef.update({'zadankaId': zadankaId});
       return zadankaId;
@@ -283,5 +290,38 @@ class FirestoreService {
       print('Error creating zadanka: $e');
       rethrow;
     }
+  }
+
+  Future<int?> getCountInvoices(int employeeId) async {
+    print('getCountInvoices called');
+    AggregateQuerySnapshot snapshot =
+        await _db
+            .collection('faktury')
+            .where('stavSchvalovani', isEqualTo: 'Připraveno')
+            .where(
+              Filter.or(
+                Filter('prvniSchvalovatelId', isEqualTo: employeeId),
+                Filter('druhySchvalovatelId', isEqualTo: employeeId),
+              ),
+            )
+            .count()
+            .get();
+    print('Count: ${snapshot.count}');
+    return snapshot.count;
+  }
+
+  Future<int?> getCountRequests(int employeeId) async {
+    print('getCountRequests called');
+    AggregateQuerySnapshot snapshot =
+        await _db
+            .collection('zadanky')
+            .where('schvalovateId', isEqualTo: employeeId)
+            .where('odeslano', isEqualTo: 'Ano')
+            .where('schvaleno', isEqualTo: 'Ne')
+            .where('zruseno', isEqualTo: 'Ne')
+            .count()
+            .get(); // Změna zde
+    print('Count: ${snapshot.count}');
+    return snapshot.count;
   }
 }

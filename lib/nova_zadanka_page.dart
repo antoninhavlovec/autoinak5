@@ -117,7 +117,8 @@ class _NovaZadankaPageState extends State<NovaZadankaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nová žádanka')),
+      appBar: AppBar(title: const Text('Nová žádanka'),
+          backgroundColor: const Color(0xFFCBEAFF)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
