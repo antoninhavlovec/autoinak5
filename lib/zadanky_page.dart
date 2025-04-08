@@ -4,7 +4,6 @@ import 'package:autoinak5/models/zadanka.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'nova_zadanka_page.dart';
-import '../services/firestore_service.dart';
 
 class ZadankyPage extends StatefulWidget {
   final FirestoreService _firestoreService = FirestoreService();
@@ -152,7 +151,8 @@ class _ZadankyPageState extends State<ZadankyPage> {
           //          title: const Text('Žádanky'),
           title: Image.asset('asset/pict/zadanky.png', height: 15),
           //          backgroundColor: Color(0xFFfdf2cf),
-          backgroundColor: Color(0xFFCBEAFF),
+          //backgroundColor: Color(0xFFCBEAFF),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           bottom: const TabBar(
             tabs: [Tab(text: 'Moje žádanky'), Tab(text: 'Ke schválení')],
           ),

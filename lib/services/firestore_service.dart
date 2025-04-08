@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/invoice.dart';
+import '../models/objednavka.dart';
 import '../models/zadanka.dart';
 import '../models/dochazka.dart';
 
@@ -46,11 +47,17 @@ class FirestoreService {
         .where('zruseno', isEqualTo: 'Ne')
         .snapshots()
         .map((snapshot) {
-      final zadanky = snapshot.docs
-          .map((doc) => Zadanka.fromMap(doc.data() as Map<String, dynamic>, doc.id)) // Přidáno explicitní přetypování
-          .toList();
-      return (zadanky, snapshot.size);
-    });
+          final zadanky =
+              snapshot.docs
+                  .map(
+                    (doc) => Zadanka.fromMap(
+                      doc.data() as Map<String, dynamic>,
+                      doc.id,
+                    ),
+                  ) // Přidáno explicitní přetypování
+                  .toList();
+          return (zadanky, snapshot.size);
+        });
   }
 
   /*Stara metoda*/
@@ -175,8 +182,6 @@ class FirestoreService {
       rethrow;
     }
   }
-
-
 
   Stream<(List<Invoice>, int)> getInvoicesWithCount(int employeeId) {
     return _db
@@ -324,4 +329,104 @@ class FirestoreService {
     print('Count: ${snapshot.count}');
     return snapshot.count;
   }
+
+  Future<List<Objednavka>> searchObjednavky({
+    String? zakaznik,
+    String? ico,
+    String? dic,
+    String? model,
+    String? telefon,
+  }) async {
+    try {
+      // 1. Sestavíme dotazy pro jednotlivé kategorie (s logikou OR pro zákazníka, IČO, DIČ a telefon)
+      List<Future<QuerySnapshot>> queryFutures = [];
+
+      if (zakaznik != null && zakaznik.isNotEmpty) {
+        final zakaznikLower = zakaznik.toLowerCase();
+        final zakaznikQuery1 = _db
+            .collection('objednavky')
+            .where('zakaznik_lower', isGreaterThanOrEqualTo: zakaznikLower)
+            .where('zakaznik_lower', isLessThan: '${zakaznikLower}z');
+        final zakaznikQuery2 = _db
+            .collection('objednavky')
+            .where('zakaznik2_lower', isGreaterThanOrEqualTo: zakaznikLower)
+            .where('zakaznik2_lower', isLessThan: '${zakaznikLower}z');
+        queryFutures.addAll([zakaznikQuery1.get(), zakaznikQuery2.get()]);
+      }
+
+      if (ico != null && ico.isNotEmpty) {
+        final icoQuery1 = _db
+            .collection('objednavky')
+            .where('ino_srvszak_hlavicka_organizace_ico', isGreaterThanOrEqualTo: ico)
+            .where('ino_srvszak_hlavicka_organizace_ico', isLessThan: '${ico}z');
+        final icoQuery2 = _db
+            .collection('objednavky')
+            .where('organizace_ico', isGreaterThanOrEqualTo: ico)
+            .where('organizace_ico', isLessThan: '${ico}z');
+        queryFutures.addAll([icoQuery1.get(), icoQuery2.get()]);
+      }
+
+      if (dic != null && dic.isNotEmpty) {
+        final dicQuery1 = _db
+            .collection('objednavky')
+            .where('ino_srvszak_hlavicka_organizace_dic', isGreaterThanOrEqualTo: dic)
+            .where('ino_srvszak_hlavicka_organizace_dic', isLessThan: '${dic}z');
+        final dicQuery2 = _db
+            .collection('objednavky')
+            .where('organizace_dic', isGreaterThanOrEqualTo: dic)
+            .where('organizace_dic', isLessThan: '${dic}z');
+        queryFutures.addAll([dicQuery1.get(), dicQuery2.get()]);
+      }
+
+      if (model != null && model.isNotEmpty) {
+        final modelLower = model.toLowerCase();
+        final modelQuery = _db
+            .collection('objednavky')
+            .where('ino_typ_vozidla_lower', isGreaterThanOrEqualTo: modelLower)
+            .where('ino_typ_vozidla_lower', isLessThan: '${modelLower}z');
+        queryFutures.add(modelQuery.get());
+      }
+
+      if (telefon != null && telefon.isNotEmpty) {
+        final telefonQuery1 = _db
+            .collection('objednavky')
+            .where('ino_srvszak_hlavicka_telefon', isGreaterThanOrEqualTo: telefon)
+            .where('ino_srvszak_hlavicka_telefon', isLessThan: '${telefon}z');
+        final telefonQuery2 = _db
+            .collection('objednavky')
+            .where('ino_srvszak_hlavicka_telefon_mobil', isGreaterThanOrEqualTo: telefon)
+            .where('ino_srvszak_hlavicka_telefon_mobil', isLessThan: '${telefon}z');
+        final telefonQuery3 = _db
+            .collection('objednavky')
+            .where('organizace_telefon', isGreaterThanOrEqualTo: telefon)
+            .where('organizace_telefon', isLessThan: '${telefon}z');
+        final telefonQuery4 = _db
+            .collection('objednavky')
+            .where('organizace_telefon_mobil', isGreaterThanOrEqualTo: telefon)
+            .where('organizace_telefon_mobil', isLessThan: '${telefon}z');
+        queryFutures.addAll([
+          telefonQuery1.get(),
+          telefonQuery2.get(),
+          telefonQuery3.get(),
+          telefonQuery4.get(),
+        ]);
+      }
+
+      // 2. Spustíme všechny dotazy paralelně
+      final results = await Future.wait(queryFutures);
+
+      // 3. Zpracujeme výsledky a spojíme je do jednoho seznamu (odstraníme duplicity)
+      final objednavky = <Objednavka>[];
+      for (final snapshot in results) {
+        for (final doc in snapshot.docs) {
+          objednavky.add(Objednavka.fromFirestore(doc.data() as Map<String, dynamic>));
+        }
+      }
+      return objednavky.toSet().toList();
+    } catch (e) {
+      print('Error searching objednavky: $e');
+      return [];
+    }
+  }
 }
+

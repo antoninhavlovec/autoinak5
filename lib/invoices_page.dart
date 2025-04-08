@@ -16,6 +16,8 @@ class InvoicesPage extends StatefulWidget {
 class _InvoicesPageState extends State<InvoicesPage> {
   // Definice _selectedInvoices
   final Set<String> _selectedInvoices = {};
+  bool _selectAll = false;
+  List<Invoice> _allInvoices = []; // Přidáno: Pro uložení všech faktur
 
   Future<int?> _loadEmployeeId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -140,12 +142,25 @@ class _InvoicesPageState extends State<InvoicesPage> {
       appBar: AppBar(
 //        title: const Text('Faktury'),
         title: Image.asset('asset/pict/faktury.png', height: 15),
-        backgroundColor: Color(0xFFCBEAFF),
+        //backgroundColor: Color(0xFFCBEAFF),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
           IconButton(
             icon: const Icon(Icons.bug_report),
             onPressed: () {
               widget._firestoreService.debugInvoices();
+            },
+          ),
+          Checkbox(
+            value: _selectAll,
+            onChanged: (bool? value) {
+              setState(() {
+                _selectAll = value ?? false;
+                _selectedInvoices.clear(); // Vždy vyčistíme před aktualizací
+                if (_selectAll) {
+                  _selectedInvoices.addAll(_allInvoices.map((invoice) => invoice.id));
+                }
+              });
             },
           ),
 
@@ -198,6 +213,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   return const Center(child: Text('Žádné faktury nenalezeny'));
                 }
                 final invoices = data.$1; // Přístup k seznamu faktur pomocí data.$1
+                _allInvoices = invoices; // Uložíme všechny faktury
                 return ListView.builder(
                   itemCount: invoices.length,
                   itemBuilder: (context, index) {
@@ -216,7 +232,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 04.0, vertical: 02.0), //Zmenšení horizontálního paddingu
                       child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 02.0, vertical: 02.0), // Zde nastavíme odsazení okraje
+                        margin: EdgeInsets.symmetric(horizontal: 02.0, vertical: 0.0), // Zde nastavíme odsazení okraje
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: Colors.grey, // Barva okraje
@@ -331,6 +347,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                           } else {
                                             _selectedInvoices.remove(invoice.id);
                                           }
+                                          _selectAll = _selectedInvoices.length == _allInvoices.length;
                                         });
                                       },
                                     ),
