@@ -48,8 +48,8 @@
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>LSApplicationQueriesSchemes</key>
-        <array>
-            <string>mailto</string>
-        </array>
+		<array>
+			<string>mailto</string>
+		</array>
 	</dict>
 </plist>

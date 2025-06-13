@@ -1,6 +1,5 @@
 import 'package:autoinak5/services/firestore_service.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'detail_objednavky_page.dart';
@@ -27,13 +26,32 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
   final _dicController = TextEditingController();
   final _modelController = TextEditingController();
   final _telefonController = TextEditingController();
+  int? _employeeId;
 
   FirestoreService get _firestoreService => widget.firestoreService;
   List<Objednavka> _searchResults = [];
 
+  Future<int?> _loadEmployeeId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? employeeIdString = prefs.getString('employeeId');
+    _employeeId = int.tryParse(
+      employeeIdString ?? '',
+    ); // Použij prázdný řetězec pro tryParse, pokud je null
+    print(
+      'objednavka_page _loadEmployeeId called with employeeIdString: $employeeIdString',
+    );
+    if (employeeIdString == null) {
+      return null;
+    }
+    final intEmployeeId = int.tryParse(employeeIdString);
+    print('intEmployeeId: $intEmployeeId');
+    return intEmployeeId;
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadEmployeeId();
   }
 
   @override
@@ -63,6 +81,7 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
       dic: dic,
       model: model,
       telefon: telefon,
+      employeeId: _employeeId,
     );
     setState(() {
       _searchResults = results;
@@ -153,7 +172,7 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
                   final formattedDatumSepsani =
                       datumSepsani != null
                           ? DateFormat('dd.MM.yyyy').format(
-                            DateTime.parse(datumSepsani as String),
+                            DateTime.parse(datumSepsani),
                           ) // Převod
                           : 'Není k dispozici';
                   final formattedCenaCelkem =
@@ -185,7 +204,7 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
                             Row(
                               children: [
                                 Text(
-                                  'Zákazník: ${objednavka.subjektyNazevSubjektu == null || objednavka.subjektyNazevSubjektu!.isEmpty ? '' : objednavka.subjektyNazevSubjektu}',
+                                  'Zákazník: ${objednavka.subjektyNazevSubjektu.isEmpty ? '' : objednavka.subjektyNazevSubjektu}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -202,11 +221,11 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
                             Row(
                               children: [
                                 Text(
-                                  'IČO: ${objednavka.inoSrvszakHlavickaOrganizaceIco == null || objednavka.inoSrvszakHlavickaOrganizaceIco!.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceIco}',
+                                  'IČO: ${objednavka.inoSrvszakHlavickaOrganizaceIco.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceIco}',
                                 ),
                                 const SizedBox(width: 8), // Mezera mezi poli
                                 Text(
-                                  'DIČ: ${objednavka.inoSrvszakHlavickaOrganizaceDic == null || objednavka.inoSrvszakHlavickaOrganizaceDic!.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceDic}',
+                                  'DIČ: ${objednavka.inoSrvszakHlavickaOrganizaceDic.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceDic}',
                                 ),
                               ],
                             ),
@@ -216,7 +235,7 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
                                   'Model: ${objednavka.inoTypVozidlaInoNazevNad}',
                                 ),
                                 const SizedBox(width: 6), // Mezera mezi poli
-                                Text('${objednavka.inoZnackamodelExp48481880}'),
+                                Text(objednavka.inoZnackamodelExp48481880),
                                 const SizedBox(width: 6), // Mezera mezi poli
                               ],
                             ),
@@ -231,7 +250,7 @@ class _ObjednavkyPageState extends State<ObjednavkyPage> {
                               'Objednávka č.: ${objednavka.inoSrvszakHlavickaReferenceSubjektu}',
                             ),
                             Text('Stav: ${objednavka.inoSrvszakHlavickaStav}'),
-                            Text('Datum Sepsaní: $formattedDatumSepsani'),
+                            Text('Datum sepsaní: $formattedDatumSepsani'),
                             // ... Další pole podle potřeby ...
                           ],
                         ),

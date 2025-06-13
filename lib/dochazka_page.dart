@@ -151,8 +151,9 @@ class _DochazkaPageState extends State<DochazkaPage> {
     return Scaffold(
       //      appBar: AppBar(title: const Text('Docházka')),
       appBar: AppBar(
-        title: Image.asset('asset/pict/dochazka.png', height: 15),
-        backgroundColor: Color(0xFFDAF7A6),
+        title: Image.asset('asset/pict/dochazka.png', height: 19),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        //        backgroundColor: Color(0xFFDAF7A6),
       ),
       body: Column(
         children: [
@@ -187,63 +188,67 @@ class _DochazkaPageState extends State<DochazkaPage> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 04.0,
-                    vertical: 2.0,
+                    vertical: 0.0,
                   ),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 0.0,
-                      vertical: 0.0,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey, // Nebo jiná barva
-                        width: 1.0,
+                  child: Card(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 0.0,
+                        vertical: 0.0,
                       ),
-                      borderRadius: BorderRadius.circular(
-                        10.0,
-                      ), // Nebo jiný radius
-                    ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 04.0,
-                            vertical: 0.0,
-                          ), // Odsazení obsahu od okraje BoxDecoration
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: double.infinity,
-                            ), // Column bude mít minimální šířku
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Titulek
-                                if (dochazka.datumDo != null)
-                                  Text(
-                                    '${formatDate(dochazka.getDatumOdAsDateTime())} - ${formatDate(dochazka.getDatumDoAsDateTime())}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ), // Volitelně: tučný titulek
-                                  )
-                                else
-                                  Text(
-                                    '${formatDate(dochazka.getDatumOdAsDateTime())}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ), // Volitelně: tučný titulek
-                                  ),
-                                // Podtitulek
-                                Text(
-                                  RegExp(r'[a-zA-Z]').hasMatch(dochazka.podklad)
-                                      ? '${dochazka.podklad} - ${dochazka.nazevPodkladu}'
-                                      : dochazka.nazevPodkladu,
-                                ),
-                              ],
-                            ),
-                          ),
-                          //                        const Divider(height: 0),
+                      /*decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey, // Nebo jiná barva
+                          width: 1.0,
                         ),
-                      ],
+                        borderRadius: BorderRadius.circular(
+                          10.0,
+                        ), // Nebo jiný radius
+                      ),*/
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 04.0,
+                              vertical: 0.0,
+                            ), // Odsazení obsahu od okraje BoxDecoration
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minWidth: double.infinity,
+                              ), // Column bude mít minimální šířku
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Titulek
+                                  if (dochazka.datumDo != null)
+                                    Text(
+                                      '${formatDate(dochazka.getDatumOdAsDateTime())} - ${formatDate(dochazka.getDatumDoAsDateTime())}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ), // Volitelně: tučný titulek
+                                    )
+                                  else
+                                    Text(
+                                      formatDate(dochazka.getDatumOdAsDateTime()),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ), // Volitelně: tučný titulek
+                                    ),
+                                  // Podtitulek
+                                  Text(
+                                    RegExp(
+                                          r'[a-zA-Z]',
+                                        ).hasMatch(dochazka.podklad)
+                                        ? '${dochazka.podklad} - ${dochazka.nazevPodkladu}'
+                                        : dochazka.nazevPodkladu,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            //                        const Divider(height: 0),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

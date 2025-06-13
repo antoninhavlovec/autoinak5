@@ -22,7 +22,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
   Future<int?> _loadEmployeeId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? employeeIdString = prefs.getString('employeeId');
-    print('employeeIdString: $employeeIdString');
+    print('invoices_page _loadEmployeeId called with employeeIdString: $employeeIdString');
     if (employeeIdString == null) {
       return null;
     }
@@ -31,8 +31,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
     return intEmployeeId;
   }
 
-  void _showNoteDialog(BuildContext context, Invoice invoice, String action) {
+  Future<void> _showNoteDialog(BuildContext context, Invoice invoice, String action) async {
     final noteController = TextEditingController();
+    final employeeId = await _loadEmployeeId(); // Použij await pro získání hodnoty
+    if (employeeId == null) {
+      // Zpracování případu, kdy se ID nepodařilo načíst (např. zobraz hlášku)
+      print('Chyba: Nepodařilo se načíst ID zaměstnance.');
+      return;
+    }
     showDialog(
       context: context,
       builder:
@@ -52,7 +58,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
               final note = noteController.text;
               switch (action) {
                 case 'Schváleno':
-                  widget._firestoreService.approveInvoice(invoice.id, note);
+                  widget._firestoreService.approveInvoice(invoice.id, note,employeeId);
                   break;
                 case 'Zamítnuto':
                   widget._firestoreService.rejectInvoice(invoice.id, note);
@@ -111,7 +117,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   void _approveSelectedInvoices(String note) {
     for (var invoiceId in _selectedInvoices) {
-      widget._firestoreService.approveInvoice(invoiceId, note);
+      widget._firestoreService.approveInvoice(invoiceId, note,_loadEmployeeId() as int);
     }
     setState(() {
       _selectedInvoices.clear();
@@ -141,16 +147,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
     return Scaffold(
       appBar: AppBar(
 //        title: const Text('Faktury'),
-        title: Image.asset('asset/pict/faktury.png', height: 15),
+        title: Image.asset('asset/pict/faktury.png', height: 18),
         //backgroundColor: Color(0xFFCBEAFF),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
-          IconButton(
+/*          IconButton(
             icon: const Icon(Icons.bug_report),
             onPressed: () {
               widget._firestoreService.debugInvoices();
             },
-          ),
+          ),*/
           Checkbox(
             value: _selectAll,
             onChanged: (bool? value) {
@@ -213,6 +219,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   return const Center(child: Text('Žádné faktury nenalezeny'));
                 }
                 final invoices = data.$1; // Přístup k seznamu faktur pomocí data.$1
+                print("Invoicec_page - Seznam faktur aktualizován - ${invoices.length} faktur");
                 _allInvoices = invoices; // Uložíme všechny faktury
                 return ListView.builder(
                   itemCount: invoices.length,
@@ -231,15 +238,15 @@ class _InvoicesPageState extends State<InvoicesPage> {
                         : "N/A"; //Kód pro formátování
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 04.0, vertical: 02.0), //Zmenšení horizontálního paddingu
-                      child: Container(
+                      child: Card(//Container(
                         margin: EdgeInsets.symmetric(horizontal: 02.0, vertical: 0.0), // Zde nastavíme odsazení okraje
-                        decoration: BoxDecoration(
+/*                        decoration: BoxDecoration(
                           border: Border.all(
                             color: Colors.grey, // Barva okraje
                             width: 1.0, // Šířka okraje
                         ),
                         borderRadius: BorderRadius.circular(10.0), // Kulaté rohy
-                      ),
+                      ),*/
                       child: Column( // Zde jsme obalili GestureDetector a Divider do Column
                         children: [
                           GestureDetector(
@@ -264,6 +271,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                         ),
                                         Text(
                                           'Stav schvalování: ${invoice.stavSchvalovani}',
+                                        ),
+                                        Text(
+                                          '1. schvalovatel: ${invoice.prvniSchvalovatelJmeno}',
+                                        ),
+                                        Text(
+                                          '2. schvalovatel: ${invoice.druhySchvalovatelJmeno}',
                                         ),
                                         Text(
                                           'Cena: $formattedCenaCelkem Kč',

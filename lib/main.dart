@@ -43,8 +43,9 @@ class MyApp extends StatelessWidget {
   final FirestoreService firestoreService;
   const MyApp({super.key, required this.firestoreService}); // Přidána inicializace
 
+  @override
   Widget build(BuildContext context) {
-    const lightBlue = Colors.lightBlue;
+   /* const lightBlue = Colors.lightBlue;
     final colorScheme = ColorScheme.fromSwatch(
       primarySwatch: lightBlue,
       brightness: Brightness.light, // Pro světlé téma,
@@ -60,9 +61,72 @@ class MyApp extends StatelessWidget {
         // NEPOUŽÍVEJ primaryChatch, pokud definuješ ColorScheme
       ),
       home: MyHomePage(firestoreService: firestoreService),
-    );
+    );*/
+      // Definice pro světlý motiv
+      final ThemeData lightTheme = ThemeData(
+        brightness: Brightness.light, // Důležité pro určení, že jde o světlý motiv
+        primarySwatch: Colors.blue, // Nebo Colors.deepPurple, atd.
+        // colorScheme se doporučuje více než primarySwatch pro moderní Flutter
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.lightBlue, // Vaše hlavní barva pro světlý motiv
+          brightness: Brightness.light,
+        ).copyWith(
+          // Můžete přepsat konkrétní barvy v colorScheme
+          // primary: Colors.lightBlue[700],
+          // secondary: Colors.amber,
+          // background: Colors.white,
+          // surface: Colors.grey[100],
+          // onPrimary: Colors.white,
+          // onSecondary: Colors.black,
+          // onBackground: Colors.black,
+          // onSurface: Colors.black,
+        ),
+        // Můžete definovat i další vlastnosti jako textTheme, appBarTheme, atd.
+        // textTheme: TextTheme( ... ),
+        // appBarTheme: AppBarTheme( ... ),
+      );
+
+      // Definice pro tmavý motiv
+      final ThemeData darkTheme = ThemeData(
+        brightness: Brightness.dark, // Důležité pro určení, že jde o tmavý motiv
+        // colorScheme se doporučuje více než primarySwatch pro moderní Flutter
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blueGrey, // Vaše hlavní barva pro tmavý motiv
+          brightness: Brightness.dark,
+        ).copyWith(
+          // Můžete přepsat konkrétní barvy v colorScheme
+          // primary: Colors.blueGrey[700],
+          // secondary: Colors.tealAccent,
+          // background: Colors.grey[850],
+          // surface: Colors.grey[800],
+          // onPrimary: Colors.white,
+          // onSecondary: Colors.black,
+          // onBackground: Colors.white,
+          // onSurface: Colors.white,
+        ),
+        // Můžete definovat i další vlastnosti jako textTheme, appBarTheme, atd.
+        // Například, pokud chcete, aby primární barva (např. v AppBar) byla v tmavém režimu jiná
+        // appBarTheme: AppBarTheme(
+        //   backgroundColor: Colors.grey[900],
+        // ),
+        // Můžete také upravit barvy specifických widgetů jako BottomNavigationBar
+        // bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        //   selectedItemColor: Colors.tealAccent,
+        //   unselectedItemColor: Colors.grey,
+        // ),
+      );
+
+      return MaterialApp(
+        title: 'Autoinak5', // Váš název aplikace
+        theme: lightTheme, // Nastavení světlého motivu
+        darkTheme: darkTheme, // Nastavení tmavého motivu
+        themeMode: ThemeMode.system, // Aplikace bude sledovat systémové nastavení
+        home: MyHomePage(firestoreService: firestoreService), // Vaše hlavní stránka
+        // ... další konfigurace MaterialApp (routes, atd.) ...
+      );
+    }
   }
-}
+
 
 class MyHomePage extends StatefulWidget {
   final FirestoreService firestoreService; // Přidali jsme proměnnou
@@ -110,9 +174,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void _subscribeToInvoiceChanges() async {
     // Odhlásíme případný existující odběr:
     _invoicesSubscription?.cancel();
-    String? employeeIdString = await getEmployeeId();
-    if (employeeIdString != null) {
-      int employeeId = int.parse(employeeIdString);
+    //String? employeeIdString = (await _loadEmployeeId()) as String?;//getEmployeeId();
+    int? employeeId = await _loadEmployeeId();
+//    if (employeeIdString != null) {
+    if (employeeId != null) {
+//      int employeeId = int.parse(employeeIdString);
       _invoicesSubscription = widget.firestoreService
           .getInvoicesWithCount(employeeId)
           .listen((data) {
@@ -134,9 +200,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // Upraveno: employeeId se získává uvnitř
     // Odhlásíme případný existující odběr:
     _requestsSubscription?.cancel();
-    String? employeeIdString = await getEmployeeId();
-    if (employeeIdString != null) {
-      int employeeId = int.parse(employeeIdString);
+//    String? employeeIdString = (await _loadEmployeeId()) as String?;//getEmployeeId();
+    int? employeeId = await _loadEmployeeId();
+//    if (employeeIdString != null) {
+    if (employeeId != null) {
+//      int employeeId = int.parse(employeeIdString);
       _requestsSubscription = widget.firestoreService
           .getZadankyWithCount(employeeId)
           .listen((data) {
@@ -166,9 +234,11 @@ class _MyHomePageState extends State<MyHomePage> {
     await _loadShowOptions();
     _subscribeToInvoiceChanges(); // Voláme vždy
     _subscribeToRequestsChanges(); // Voláme vždy
-    String? employeeIdString = await getEmployeeId();
-    if (employeeIdString != null) {
-      int employeeId = int.parse(employeeIdString);
+//    String? employeeIdString = (await _loadEmployeeId()) as String?;//getEmployeeId();
+    int? employeeId = await _loadEmployeeId();
+    if (employeeId != null) {
+//    if (employeeIdString != null) {
+//      int employeeId = int.parse(employeeIdString);
       _unapprovedRequestsCount =
           (await widget.firestoreService.getCountRequests(employeeId))!;
     } else {
@@ -187,14 +257,14 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  Future<String?> getEmployeeId() async {
+  /*Future<String?> getEmployeeId() async {
     print('getEmployeeId called');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print('SharedPreferences instance obtained');
     String? employeeId = prefs.getString('employeeId');
-    print('employeeId from prefs: $employeeId');
+    print('main getEmployeeId called with employeeId from prefs: $employeeId');
     return employeeId;
-  }
+  }*/
 
   void _onRequestsChanged() {
     if (_dataLoaded) {
@@ -206,7 +276,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _updateRequestCountForBadge() async {
     if (_dataLoaded) {
       // Znovu zkontrolujeme, zda jsou data načtena
-      String? employeeIdString = await getEmployeeId();
+      String? employeeIdString = (_loadEmployeeId) as String?;//getEmployeeId();
       if (employeeIdString != null) {
         int employeeId = int.parse(employeeIdString);
         _unapprovedRequestsCount =
@@ -360,8 +430,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
-          'asset/logo/logo_pouze_AUTO_INak_trans.png',
-          height: 30,
+          'asset/logo/in_portal_logo_male-removebg-preview.png',
+          height: 35,
         ), //logo_pouze_AUTO_INak_trans
         //backgroundColor: Color(0xFFCBEAFF),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -499,7 +569,7 @@ class _SettingsPageState extends State<SettingsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print('SharedPreferences instance obtained');
     String? employeeId = prefs.getString('employeeId');
-    print('employeeId from prefs: $employeeId');
+    print('main _loadEmployeeId called with employeeId from prefs: $employeeId');
     if (employeeId != null) {
       setState(() {
         print('setState called');
@@ -538,7 +608,7 @@ class _SettingsPageState extends State<SettingsPage> {
             TextField(
               controller: _employeeIdController,
               decoration: const InputDecoration(
-                labelText: 'Číslo zaměstnance 32890125, 21677, 18684263',
+                labelText: 'Číslo zaměstnance 32890125,21677,18684263,3396781,19916827',
               ),
               keyboardType: TextInputType.number,
               onSubmitted: (value) {

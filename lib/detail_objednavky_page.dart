@@ -29,7 +29,7 @@ class DetailObjednavkyPage extends StatelessWidget {
     final formattedDatumVzniku =
         datumVzniku != null
             ? DateFormat('dd.MM.yyyy').format(
-              DateTime.parse(datumVzniku as String),
+              DateTime.parse(datumVzniku),
             ) // Převod na DateTime
             : 'Není k dispozici';
 
@@ -37,7 +37,7 @@ class DetailObjednavkyPage extends StatelessWidget {
     final formattedDatumZavaznaObjednavka =
         datumZavaznaObjednavka != null
             ? DateFormat('dd.MM.yyyy').format(
-              DateTime.parse(datumZavaznaObjednavka as String),
+              DateTime.parse(datumZavaznaObjednavka),
             ) // Převod
             : 'Není k dispozici';
 
@@ -45,7 +45,7 @@ class DetailObjednavkyPage extends StatelessWidget {
     final formattedDatumSepsani =
         datumSepsani != null
             ? DateFormat('dd.MM.yyyy').format(
-              DateTime.parse(datumSepsani as String),
+              DateTime.parse(datumSepsani),
             ) // Převod
             : 'Není k dispozici';
 
@@ -65,30 +65,30 @@ class DetailObjednavkyPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text('Stav: ${objednavka.inoSrvszakHlavickaStav}'),
               Text(
-                'Zákazník: ${objednavka.subjektyNazevSubjektu == null || objednavka.subjektyNazevSubjektu!.isEmpty ? '' : objednavka.subjektyNazevSubjektu}',
+                'Zákazník: ${objednavka.subjektyNazevSubjektu.isEmpty ? '' : objednavka.subjektyNazevSubjektu}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               Row(
                 children: [
                   Text(
-                    'IČO: ${objednavka.inoSrvszakHlavickaOrganizaceIco == null || objednavka.inoSrvszakHlavickaOrganizaceIco!.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceIco}',
+                    'IČO: ${objednavka.inoSrvszakHlavickaOrganizaceIco.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceIco}',
                   ),
                   const SizedBox(width: 8), // Mezera mezi poli
                   Text(
-                    'DIČ: ${objednavka.inoSrvszakHlavickaOrganizaceDic == null || objednavka.inoSrvszakHlavickaOrganizaceDic!.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceDic}',
+                    'DIČ: ${objednavka.inoSrvszakHlavickaOrganizaceDic.isEmpty ? '' : objednavka.inoSrvszakHlavickaOrganizaceDic}',
                   ),
                 ],
               ),
               Text(
-                'Ulice: ${objednavka.inoSrvszakHlavickaUlice == null || objednavka.inoSrvszakHlavickaUlice!.isEmpty ? '' : objednavka.inoSrvszakHlavickaUlice} ${objednavka.inoSrvszakHlavickaCisloCp == null || objednavka.inoSrvszakHlavickaCisloCp!.isEmpty ? '' : objednavka.inoSrvszakHlavickaCisloCp}',
+                'Ulice: ${objednavka.inoSrvszakHlavickaUlice.isEmpty ? '' : objednavka.inoSrvszakHlavickaUlice} ${objednavka.inoSrvszakHlavickaCisloCp.isEmpty ? '' : objednavka.inoSrvszakHlavickaCisloCp}',
               ),
               Text(
-                'Misto: ${objednavka.inoSrvszakHlavickaMisto == null || objednavka.inoSrvszakHlavickaMisto!.isEmpty ? '' : objednavka.inoSrvszakHlavickaMisto} ${objednavka.inoSrvszakHlavickaPsc == null || objednavka.inoSrvszakHlavickaPsc!.isEmpty ? '' : objednavka.inoSrvszakHlavickaPsc}',
+                'Misto: ${objednavka.inoSrvszakHlavickaMisto.isEmpty ? '' : objednavka.inoSrvszakHlavickaMisto} ${objednavka.inoSrvszakHlavickaPsc.isEmpty ? '' : objednavka.inoSrvszakHlavickaPsc}',
               ),
               GestureDetector(
                 onTap: () async {
                   final email = objednavka.inoSrvszakHlavickaEmail;
-                  if (email != null && email.isNotEmpty) {
+                  if (email.isNotEmpty) {
                     final url = Uri(
                       scheme: 'mailto',
                       path: email,
@@ -128,7 +128,7 @@ class DetailObjednavkyPage extends StatelessWidget {
               GestureDetector(
                 onTap: () async {
                   final telefon = objednavka.inoSrvszakHlavickaTelefonMobil;
-                  if (telefon != null && telefon.isNotEmpty) {
+                  if (telefon.isNotEmpty) {
                     final url = Uri.parse('tel:$telefon');
                     if (await canLaunchUrl(url)) {
                       await launchUrl(url);
@@ -355,7 +355,7 @@ class DetailObjednavkyPage extends StatelessWidget {
               Text('Č.obj.: ${objednavka.inoSrvszakHlavickaKomise}'),
               Text('Typ prodeje: ${objednavka.inoSrvszakHlavickaHodnoceni}'),
               Text(
-                'Statut: ${objednavka.inoSrvszakHlavickaPneuVyrobce == null || objednavka.inoSrvszakHlavickaPneuVyrobce!.isEmpty ? '' : objednavka.inoSrvszakHlavickaPneuVyrobce}',
+                'Statut: ${objednavka.inoSrvszakHlavickaPneuVyrobce.isEmpty ? '' : objednavka.inoSrvszakHlavickaPneuVyrobce}',
               ),
               Text(
                 'Rezervováno do: ${objednavka.inoSrvszakHlavickaPneuVydanoDne == null || objednavka.inoSrvszakHlavickaPneuVydanoDne!.isEmpty ? '' : objednavka.inoSrvszakHlavickaPneuVydanoDne}',
@@ -363,9 +363,9 @@ class DetailObjednavkyPage extends StatelessWidget {
               Text(
                 'Pojistka: ${objednavka.inoSrvszakHlavickaPojistka2 == null || objednavka.inoSrvszakHlavickaPojistka2!.isEmpty ? '' : objednavka.inoSrvszakHlavickaPojistka2}',
               ),
-              Text('Datum vzniku: ${formattedDatumVzniku}'),
+              Text('Datum vzniku: $formattedDatumVzniku'),
               Text(
-                'Datum Zavazné objednávky: ${formattedDatumZavaznaObjednavka}',
+                'Datum Zavazné objednávky: $formattedDatumZavaznaObjednavka',
               ),
               Text(
                 'Zavazná objednávka: ${objednavka.udaInoZavaznaObjednavkaZavaznaObjednavka}',

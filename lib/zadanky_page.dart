@@ -9,7 +9,7 @@ class ZadankyPage extends StatefulWidget {
   final FirestoreService _firestoreService = FirestoreService();
   final VoidCallback onRequestsChanged; // Přidán callback
 
-  ZadankyPage({Key? key, required this.onRequestsChanged}) : super(key: key);
+  ZadankyPage({super.key, required this.onRequestsChanged});
 
   @override
   State<ZadankyPage> createState() => _ZadankyPageState();
@@ -28,6 +28,9 @@ class _ZadankyPageState extends State<ZadankyPage> {
   Future<void> _loadEmployeeId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? employeeIdString = prefs.getString('employeeId');
+    print(
+      'zadanky_page _loadEmployeeId called with employeeIdString: $employeeIdString',
+    );
     if (employeeIdString != null) {
       setState(() {
         _employeeId = int.tryParse(employeeIdString);
@@ -74,11 +77,13 @@ class _ZadankyPageState extends State<ZadankyPage> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'schváleno':
-        return Colors.green.withAlpha(128); // Zelená s poloviční průhledností
+        return Colors.lightGreen.withAlpha(
+          200,
+        ); // Zelená s poloviční průhledností
       case 'zamítnuto':
-        return Colors.red.withAlpha(128); // Červená s poloviční průhledností
+        return Colors.red.withAlpha(200); // Červená s poloviční průhledností
       case 'odesláno':
-        return Colors.yellow.withAlpha(50); // Žlutá s poloviční průhledností
+        return Colors.yellow.withAlpha(250); // Žlutá s poloviční průhledností
       case 'neodesláno':
         return Colors.grey.withAlpha(50); // Šedá s poloviční průhledností
       default:
@@ -148,10 +153,19 @@ class _ZadankyPageState extends State<ZadankyPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          //          title: const Text('Žádanky'),
-          title: Image.asset('asset/pict/zadanky.png', height: 15),
-          //          backgroundColor: Color(0xFFfdf2cf),
-          //backgroundColor: Color(0xFFCBEAFF),
+          title: Column(
+            mainAxisSize: MainAxisSize.min, // Aby Column nezabíral zbytečně moc místa
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset('asset/pict/zadanky.png', height: 18),
+              const SizedBox(height: 8), // Volitelná mezera mezi obrázkem a oddělovačem
+              const Divider(
+                height: 1, // Výška oddělovače
+                thickness: 1, // Tloušťka oddělovače
+                color: Colors.grey, // Barva oddělovače (přizpůsob si)
+              ),
+            ],
+          ),
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           bottom: const TabBar(
             tabs: [Tab(text: 'Moje žádanky'), Tab(text: 'Ke schválení')],
@@ -183,6 +197,7 @@ class _ZadankyPageState extends State<ZadankyPage> {
               MaterialPageRoute(builder: (context) => NovaZadankaPage()),
             );
           },
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: const Icon(Icons.add),
         ),
         body: TabBarView(
@@ -221,16 +236,27 @@ class _ZadankyPageState extends State<ZadankyPage> {
                           minVerticalPadding:
                               0, // Přidáno: Minimální vertikální padding
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 06.0,
-                            vertical: 2.0,
+                            horizontal: 2.0,
+                            vertical: 0.0,
                           ),
                           title: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 09.0,
-                              vertical: 02.0,
-                            ), //Zmenšení horizontálního paddingu
-
-                            decoration: BoxDecoration(
+                            /*padding: EdgeInsets.symmetric(
+                              horizontal: 1.0,
+                              vertical: 0.0,
+                            ),*/
+                            //Zmenšení horizontálního paddingu
+                            child: Card(
+                              color: _getStatusColor(zadanka.status),
+                              margin: const EdgeInsets.all(
+                                2.0,
+                              ), // Vnější okraje karty
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal:
+                                      14.0, // Větší horizontální odsazení
+                                  vertical: 4.0, // Větší vertikální odsazení
+                                ),
+                                /*                            decoration: BoxDecoration(
                               color: _getStatusColor(zadanka.status),
                               border: Border.all(
                                 color: Colors.grey, // Barva okraje
@@ -239,54 +265,63 @@ class _ZadankyPageState extends State<ZadankyPage> {
                               borderRadius: BorderRadius.circular(
                                 10.0,
                               ), // Kulaté rohy
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '$formattedDatumOd - $formattedDatumDo',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Typ: ${zadanka.typZadanky}',
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                      Text(
-                                        'Poznámka: ${zadanka.poznamka ?? ''}',
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                      Text(
-                                        'Schvalovatel: ${zadanka.schvalovateJmeno}',
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                            ),*/
+                                child: Row(
                                   children: [
-                                    Text(
-                                      'Dny čerpání: ${zadanka.dnyCerpani}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      zadanka.status,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '$formattedDatumOd - $formattedDatumDo',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Typ: ${zadanka.typZadanky}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Poznámka: ${zadanka.poznamka ?? ''}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Schvalovatel: ${zadanka.schvalovateJmeno}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Dny čerpání: ${zadanka.dnyCerpani}',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          zadanka.status,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         );
@@ -309,13 +344,15 @@ class _ZadankyPageState extends State<ZadankyPage> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     final data =
-                        snapshot.data; // Získání dat (tuple: (List<Zadanka>, int))
+                        snapshot
+                            .data; // Získání dat (tuple: (List<Zadanka>, int))
                     if (data == null || data.$1.isEmpty) {
                       // Kontrola prázdného seznamu
                       return const Center(child: Text('Žádné žádanky'));
                     }
                     final zadanky = data.$1; // Získání seznamu žádostí
-                    final count = data.$2; // Získání počtu (pokud chceš zobrazit)
+                    final count =
+                        data.$2; // Získání počtu (pokud chceš zobrazit)
                     return ListView.separated(
                       itemCount: zadanky.length,
                       separatorBuilder: (BuildContext context, int index) {
@@ -413,7 +450,8 @@ class _ZadankyPageState extends State<ZadankyPage> {
                                     ),
                               );
                             },
-                            child: Container(
+                            child: Card(
+                              /*                            child: Container(
                               // Přidali jsme Container
                               decoration: BoxDecoration(
 //                                color: _getStatusColor(zadanka.status),
@@ -424,7 +462,7 @@ class _ZadankyPageState extends State<ZadankyPage> {
                                 borderRadius: BorderRadius.circular(
                                   10.0,
                                 ), // Kulaté rohy
-                              ),
+                              ),*/
                               child: Row(
                                 // Přidali jsme Row
                                 children: [
@@ -516,6 +554,7 @@ class _ZadankyPageState extends State<ZadankyPage> {
                               ),
                             ),
                           ),
+                          //                        ),
                         );
                       },
                     );

@@ -50,10 +50,7 @@ class FirestoreService {
           final zadanky =
               snapshot.docs
                   .map(
-                    (doc) => Zadanka.fromMap(
-                      doc.data() as Map<String, dynamic>,
-                      doc.id,
-                    ),
+                    (doc) => Zadanka.fromMap(doc.data(), doc.id),
                   ) // Přidáno explicitní přetypování
                   .toList();
           return (zadanky, snapshot.size);
@@ -184,23 +181,38 @@ class FirestoreService {
   }
 
   Stream<(List<Invoice>, int)> getInvoicesWithCount(int employeeId) {
-    return _db
-        .collection('faktury')
-        .where(
-          Filter.or(
-            Filter('prvniSchvalovatelId', isEqualTo: employeeId),
-            Filter('druhySchvalovatelId', isEqualTo: employeeId),
-          ),
-        )
-        .where('stavSchvalovani', isEqualTo: 'Připraveno')
-        .snapshots()
-        .map((snapshot) {
-          final invoices =
-              snapshot.docs
-                  .map((doc) => Invoice.fromMap(doc.data(), doc.id))
-                  .toList();
-          return (invoices, snapshot.size);
-        });
+    final invoicesCollection = _db.collection('faktury');
+
+    // Dotaz pro faktury, kde je uživatel PRVNÍM schvalovatelem a stav je "Připraveno":
+    final prvniSchvalovatelQuery = invoicesCollection.where(
+      Filter.or(
+        Filter.and(
+          Filter('prvniSchvalovatelId', isEqualTo: employeeId),
+          Filter('stavSchvalovani', isEqualTo: 'Připraveno'),
+        ),
+        Filter.and(
+          Filter('druhySchvalovatelId', isEqualTo: employeeId),
+          Filter('stavSchvalovani', isEqualTo: 'Akceptováno'),
+        ),
+      ),
+    );
+
+    /*       .where('prvniSchvalovatelId', isEqualTo: employeeId)
+        .where('stavSchvalovani', isEqualTo: 'Připraveno');*/
+
+    return prvniSchvalovatelQuery.snapshots().map((snapshot) {
+      final invoices =
+          snapshot.docs
+              .map(
+                (doc) =>
+                    Invoice.fromMap(doc.data(), doc.id),
+              )
+              .toList();
+      print(
+        "getInvoicesWithCount: Nová data vydána - ${invoices.length} faktur",
+      );
+      return (invoices, invoices.length);
+    });
   }
 
   /// 🔍 **Debugovací metoda pro ruční kontrolu dat**
@@ -225,7 +237,7 @@ class FirestoreService {
     }
   }
 
-  Future<void> approveInvoice(
+ /* Future<void> approveInvoice(
     String invoiceId,
     String poznamkaSchvalovatele,
   ) async {
@@ -237,6 +249,46 @@ class FirestoreService {
         'stavSchvalovani': 'Schváleno',
         'poznamkaSchvalovatele': poznamkaSchvalovatele,
         'datumSchvaleni': FieldValue.serverTimestamp(), // Přidání timestampu
+      });
+    } catch (e) {
+      print('Error approving invoice: $e');
+      rethrow;
+    }
+  }*/
+
+  Future<void> approveInvoice(
+      String invoiceId,
+      String poznamkaSchvalovatele,
+      int employeeId, // Přidáno ID přihlášeného uživatele
+      ) async {
+    print(
+      'approveInvoice called with invoiceId: $invoiceId, poznamkaSchvalovatele: $poznamkaSchvalovatele, employeeId: $employeeId',
+    );
+    try {
+      final invoiceDoc = await _db.collection('faktury').doc(invoiceId).get();
+      if (!invoiceDoc.exists) {
+        throw Exception('Faktura s ID $invoiceId nebyla nalezena.');
+      }
+      final invoiceData = invoiceDoc.data() as Map<String, dynamic>;
+      final prvniSchvalovatelId = invoiceData['prvniSchvalovatelId'];
+      final druhySchvalovatelId = invoiceData['druhySchvalovatelId'];
+      String novyStav = 'Schváleno'; // Výchozí stav (pro jednoho schvalovatele)
+
+      if (prvniSchvalovatelId == employeeId) {
+        if (druhySchvalovatelId != null) {
+          novyStav = 'Akceptováno'; // První schvalovatel, existuje druhý
+        }
+      } else if (druhySchvalovatelId == employeeId) {
+        novyStav = 'Schváleno'; // Druhý schvalovatel schvaluje
+      } else {
+        throw Exception(
+          'Uživatel $employeeId není schvalovatelem faktury $invoiceId.',
+        );
+      }
+      await _db.collection('faktury').doc(invoiceId).update({
+        'stavSchvalovani': novyStav,
+        'poznamkaSchvalovatele': poznamkaSchvalovatele,
+        'datumSchvaleni': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       print('Error approving invoice: $e');
@@ -297,18 +349,34 @@ class FirestoreService {
     }
   }
 
+  /*Future<int?> getCountInvoices(int employeeId) async {
+    print('getCountInvoices called');
+    final invoicesCollection = _db.collection('faktury');
+    // 1. Dotaz pro faktury, kde je uživatel PRVNÍM schvalovatelem a stav je "Připraveno":
+    final prvniSchvalovatelQuery = invoicesCollection
+        .where('prvniSchvalovatelId', isEqualTo: employeeId)
+        .where('stavSchvalovani', isEqualTo: 'Připraveno');
+    // 2. Dotaz pro faktury, kde je uživatel DRUHÝM schvalovatelem a stav je "Akceptováno":
+    final druhySchvalovatelQuery = invoicesCollection
+        .where('druhySchvalovatelId', isEqualTo: employeeId)
+        .where('stavSchvalovani', isEqualTo: 'Akceptováno');
+    // Provedeme oba dotazy paralelně a sečteme výsledky:
+    final results = await Future.wait([
+      prvniSchvalovatelQuery.count().get(),
+      druhySchvalovatelQuery.count().get(),
+    ]);
+    final count = (results[0].count ?? 0) + (results[1].count ?? 0);
+    print('Count: $count');
+    return count;
+  }*/
+
   Future<int?> getCountInvoices(int employeeId) async {
     print('getCountInvoices called');
     AggregateQuerySnapshot snapshot =
         await _db
             .collection('faktury')
+            .where('prvniSchvalovatelId', isEqualTo: employeeId)
             .where('stavSchvalovani', isEqualTo: 'Připraveno')
-            .where(
-              Filter.or(
-                Filter('prvniSchvalovatelId', isEqualTo: employeeId),
-                Filter('druhySchvalovatelId', isEqualTo: employeeId),
-              ),
-            )
             .count()
             .get();
     print('Count: ${snapshot.count}');
@@ -336,74 +404,154 @@ class FirestoreService {
     String? dic,
     String? model,
     String? telefon,
+    int? employeeId,
   }) async {
+    print(
+      'Hledám objednávky pro employeeId: $employeeId',
+    ); // Přidáno pro kontrolu
     try {
       // 1. Sestavíme dotazy pro jednotlivé kategorie (s logikou OR pro zákazníka, IČO, DIČ a telefon)
       List<Future<QuerySnapshot>> queryFutures = [];
 
       if (zakaznik != null && zakaznik.isNotEmpty) {
         final zakaznikLower = zakaznik.toLowerCase();
-        final zakaznikQuery1 = _db
+        var zakaznikQuery1 = _db
             .collection('objednavky')
             .where('zakaznik_lower', isGreaterThanOrEqualTo: zakaznikLower)
             .where('zakaznik_lower', isLessThan: '${zakaznikLower}z');
-        final zakaznikQuery2 = _db
+        var zakaznikQuery2 = _db
             .collection('objednavky')
             .where('zakaznik2_lower', isGreaterThanOrEqualTo: zakaznikLower)
             .where('zakaznik2_lower', isLessThan: '${zakaznikLower}z');
+        if (employeeId != null) {
+          zakaznikQuery1 = zakaznikQuery1.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          zakaznikQuery2 = zakaznikQuery2.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+        }
         queryFutures.addAll([zakaznikQuery1.get(), zakaznikQuery2.get()]);
       }
 
       if (ico != null && ico.isNotEmpty) {
-        final icoQuery1 = _db
+        var icoQuery1 = _db
             .collection('objednavky')
-            .where('ino_srvszak_hlavicka_organizace_ico', isGreaterThanOrEqualTo: ico)
-            .where('ino_srvszak_hlavicka_organizace_ico', isLessThan: '${ico}z');
-        final icoQuery2 = _db
+            .where(
+              'ino_srvszak_hlavicka_organizace_ico',
+              isGreaterThanOrEqualTo: ico,
+            )
+            .where(
+              'ino_srvszak_hlavicka_organizace_ico',
+              isLessThan: '${ico}z',
+            );
+        var icoQuery2 = _db
             .collection('objednavky')
             .where('organizace_ico', isGreaterThanOrEqualTo: ico)
             .where('organizace_ico', isLessThan: '${ico}z');
+        if (employeeId != null) {
+          icoQuery1 = icoQuery1.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          icoQuery2 = icoQuery2.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+        }
         queryFutures.addAll([icoQuery1.get(), icoQuery2.get()]);
       }
 
       if (dic != null && dic.isNotEmpty) {
-        final dicQuery1 = _db
+        var dicQuery1 = _db
             .collection('objednavky')
-            .where('ino_srvszak_hlavicka_organizace_dic', isGreaterThanOrEqualTo: dic)
-            .where('ino_srvszak_hlavicka_organizace_dic', isLessThan: '${dic}z');
-        final dicQuery2 = _db
+            .where(
+              'ino_srvszak_hlavicka_organizace_dic',
+              isGreaterThanOrEqualTo: dic,
+            )
+            .where(
+              'ino_srvszak_hlavicka_organizace_dic',
+              isLessThan: '${dic}z',
+            );
+        var dicQuery2 = _db
             .collection('objednavky')
             .where('organizace_dic', isGreaterThanOrEqualTo: dic)
             .where('organizace_dic', isLessThan: '${dic}z');
+        if (employeeId != null) {
+          dicQuery1 = dicQuery1.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          dicQuery2 = dicQuery2.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+        }
         queryFutures.addAll([dicQuery1.get(), dicQuery2.get()]);
       }
 
       if (model != null && model.isNotEmpty) {
         final modelLower = model.toLowerCase();
-        final modelQuery = _db
+        var modelQuery = _db
             .collection('objednavky')
             .where('ino_typ_vozidla_lower', isGreaterThanOrEqualTo: modelLower)
             .where('ino_typ_vozidla_lower', isLessThan: '${modelLower}z');
+        if (employeeId != null) {
+          modelQuery = modelQuery.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+        }
         queryFutures.add(modelQuery.get());
       }
 
       if (telefon != null && telefon.isNotEmpty) {
-        final telefonQuery1 = _db
+        var telefonQuery1 = _db
             .collection('objednavky')
-            .where('ino_srvszak_hlavicka_telefon', isGreaterThanOrEqualTo: telefon)
+            .where(
+              'ino_srvszak_hlavicka_telefon',
+              isGreaterThanOrEqualTo: telefon,
+            )
             .where('ino_srvszak_hlavicka_telefon', isLessThan: '${telefon}z');
-        final telefonQuery2 = _db
+        var telefonQuery2 = _db
             .collection('objednavky')
-            .where('ino_srvszak_hlavicka_telefon_mobil', isGreaterThanOrEqualTo: telefon)
-            .where('ino_srvszak_hlavicka_telefon_mobil', isLessThan: '${telefon}z');
-        final telefonQuery3 = _db
+            .where(
+              'ino_srvszak_hlavicka_telefon_mobil',
+              isGreaterThanOrEqualTo: telefon,
+            )
+            .where(
+              'ino_srvszak_hlavicka_telefon_mobil',
+              isLessThan: '${telefon}z',
+            );
+        var telefonQuery3 = _db
             .collection('objednavky')
             .where('organizace_telefon', isGreaterThanOrEqualTo: telefon)
             .where('organizace_telefon', isLessThan: '${telefon}z');
-        final telefonQuery4 = _db
+        var telefonQuery4 = _db
             .collection('objednavky')
             .where('organizace_telefon_mobil', isGreaterThanOrEqualTo: telefon)
             .where('organizace_telefon_mobil', isLessThan: '${telefon}z');
+
+        if (employeeId != null) {
+          telefonQuery1 = telefonQuery1.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          telefonQuery2 = telefonQuery2.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          telefonQuery3 = telefonQuery3.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+          telefonQuery4 = telefonQuery4.where(
+            'subjekty_cislo_subjektu',
+            isEqualTo: employeeId,
+          );
+        }
         queryFutures.addAll([
           telefonQuery1.get(),
           telefonQuery2.get(),
@@ -419,7 +567,9 @@ class FirestoreService {
       final objednavky = <Objednavka>[];
       for (final snapshot in results) {
         for (final doc in snapshot.docs) {
-          objednavky.add(Objednavka.fromFirestore(doc.data() as Map<String, dynamic>));
+          objednavky.add(
+            Objednavka.fromFirestore(doc.data() as Map<String, dynamic>),
+          );
         }
       }
       return objednavky.toSet().toList();
@@ -429,4 +579,3 @@ class FirestoreService {
     }
   }
 }
-

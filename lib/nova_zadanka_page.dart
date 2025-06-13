@@ -56,7 +56,11 @@ class _NovaZadankaPageState extends State<NovaZadankaPage> {
 
   int _calculatePracovniDny(DateTime datumOd, DateTime datumDo) {
     int pracovniDny = 0;
-    for (DateTime den = datumOd; den.isBefore(datumDo.add(const Duration(days: 1))); den = den.add(const Duration(days: 1))) {
+    for (
+      DateTime den = datumOd;
+      den.isBefore(datumDo.add(const Duration(days: 1)));
+      den = den.add(const Duration(days: 1))
+    ) {
       if (den.weekday != DateTime.saturday && den.weekday != DateTime.sunday) {
         pracovniDny++;
       }
@@ -65,9 +69,7 @@ class _NovaZadankaPageState extends State<NovaZadankaPage> {
   }
 
   Future<void> _submitZadanka() async {
-    if (_datumOd == null ||
-        _datumDo == null ||
-        _employeeId == null) {
+    if (_datumOd == null || _datumDo == null || _employeeId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vyplňte prosím všechna pole.')),
       );
@@ -98,7 +100,7 @@ class _NovaZadankaPageState extends State<NovaZadankaPage> {
       'zamestnanecId': _employeeId,
       'zamestnanecJmeno': "",
       'zruseno': 'Ne',
-      'poznamkaSchvalovatel':""
+      'poznamkaSchvalovatel': "",
     };
 
     try {
@@ -117,8 +119,11 @@ class _NovaZadankaPageState extends State<NovaZadankaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nová žádanka'),
-          backgroundColor: const Color(0xFFCBEAFF)),
+      appBar: AppBar(
+        title: const Text('Nová žádanka'),
+        //          backgroundColor: const Color(0xFFCBEAFF)),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
