@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class Invoice {
   final double? cenaCelkem;
@@ -45,7 +46,9 @@ class Invoice {
 
   /// ✅ Bezpečné načítání dat z Firestore
   factory Invoice.fromMap(Map<String, dynamic> map, String id) {
-    print('Invoice.fromMap called with: $map, id: $id');
+    if (kDebugMode) {
+      print('Invoice.fromMap called with: $map, id: $id');
+    }
     try {
       return Invoice(
         cenaCelkem:
@@ -76,14 +79,18 @@ class Invoice {
         id: id,
       );
     } catch (e) {
-      print('Error in Invoice.fromMap: $e');
+      if (kDebugMode) {
+        print('Error in Invoice.fromMap: $e');
+      }
       rethrow;
     }
   }
 
   /// ✅ Oprava `created_at` na `Timestamp` při ukládání do Firestore
   Map<String, dynamic> toMap() {
-    print('Invoice.toMap called');
+    if (kDebugMode) {
+      print('Invoice.toMap called');
+    }
     return {
       'cenaCelkem': cenaCelkem,
       'created_at': created_at != null ? Timestamp.fromDate(created_at!) : null,

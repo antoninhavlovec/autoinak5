@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/invoice.dart';
 import '../models/objednavka.dart';
 import '../models/zadanka.dart';
@@ -8,31 +9,45 @@ class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Stream<List<Zadanka>> getMyZadanky(int employeeId) {
-    print('getMyZadanky called');
+    if (kDebugMode) {
+      print('getMyZadanky called');
+    }
     try {
       return _db
           .collection('zadanky')
           .where('zamestnanecId', isEqualTo: employeeId)
           .snapshots()
           .map((snapshot) {
-            print('snapshot received, ${snapshot.docs.length} documents');
+            if (kDebugMode) {
+              print('snapshot received, ${snapshot.docs.length} documents');
+            }
             if (snapshot.docs.isEmpty) {
-              print('no documents found');
+              if (kDebugMode) {
+                print('no documents found');
+              }
             }
             return snapshot.docs.map((doc) {
-              print('mapping document: ${doc.id}');
+              if (kDebugMode) {
+                print('mapping document: ${doc.id}');
+              }
               try {
                 final zadanka = Zadanka.fromMap(doc.data(), doc.id);
-                print('mapped zadanka: ${zadanka.zadankaId}');
+                if (kDebugMode) {
+                  print('mapped zadanka: ${zadanka.zadankaId}');
+                }
                 return zadanka;
               } catch (e) {
-                print('error mapping document: ${doc.id}, error: $e');
+                if (kDebugMode) {
+                  print('error mapping document: ${doc.id}, error: $e');
+                }
                 rethrow;
               }
             }).toList();
           });
     } catch (e) {
-      print('error getting zadanky: $e');
+      if (kDebugMode) {
+        print('error getting zadanky: $e');
+      }
       rethrow;
     }
   }
@@ -59,7 +74,9 @@ class FirestoreService {
 
   /*Stara metoda*/
   Stream<List<Zadanka>> getZadankyToApprove(int employeeId) {
-    print('getZadankyToApprove called');
+    if (kDebugMode) {
+      print('getZadankyToApprove called');
+    }
     try {
       return _db
           .collection('zadanky')
@@ -69,30 +86,44 @@ class FirestoreService {
           .where('zruseno', isEqualTo: 'Ne')
           .snapshots()
           .map((snapshot) {
-            print('snapshot received, ${snapshot.docs.length} documents');
+            if (kDebugMode) {
+              print('snapshot received, ${snapshot.docs.length} documents');
+            }
             if (snapshot.docs.isEmpty) {
-              print('no documents found');
+              if (kDebugMode) {
+                print('no documents found');
+              }
             }
             return snapshot.docs.map((doc) {
-              print('mapping document: ${doc.id}');
+              if (kDebugMode) {
+                print('mapping document: ${doc.id}');
+              }
               try {
                 final zadanka = Zadanka.fromMap(doc.data(), doc.id);
-                print('mapped zadanka: ${zadanka.zadankaId}');
+                if (kDebugMode) {
+                  print('mapped zadanka: ${zadanka.zadankaId}');
+                }
                 return zadanka;
               } catch (e) {
-                print('error mapping document: ${doc.id}, error: $e');
+                if (kDebugMode) {
+                  print('error mapping document: ${doc.id}, error: $e');
+                }
                 rethrow;
               }
             }).toList();
           });
     } catch (e) {
-      print('error getting zadanky to approve: $e');
+      if (kDebugMode) {
+        print('error getting zadanky to approve: $e');
+      }
       rethrow;
     }
   }
 
   Stream<List<Dochazka>> getDochazka(int employeeId) {
-    print('getDochazka called');
+    if (kDebugMode) {
+      print('getDochazka called');
+    }
     try {
       return _db
           .collection('dochazka')
@@ -100,46 +131,66 @@ class FirestoreService {
           .orderBy('datumOd', descending: true)
           .snapshots()
           .map((snapshot) {
-            print('snapshot received, ${snapshot.docs.length} documents');
+            if (kDebugMode) {
+              print('snapshot received, ${snapshot.docs.length} documents');
+            }
             if (snapshot.docs.isEmpty) {
-              print('no documents found');
+              if (kDebugMode) {
+                print('no documents found');
+              }
             }
             return snapshot.docs.map((doc) {
-              print('mapping document: ${doc.id}');
+              if (kDebugMode) {
+                print('mapping document: ${doc.id}');
+              }
               try {
                 final dochazka = Dochazka.fromMap(doc.data(), doc.id);
-                print('mapped dochazka: ${dochazka.firestoreId}');
+                if (kDebugMode) {
+                  print('mapped dochazka: ${dochazka.firestoreId}');
+                }
                 return dochazka;
               } catch (e) {
-                print('error mapping document: ${doc.id}, error: $e');
+                if (kDebugMode) {
+                  print('error mapping document: ${doc.id}, error: $e');
+                }
                 rethrow;
               }
             }).toList();
           });
     } catch (e) {
-      print('error getting dochazka: $e');
+      if (kDebugMode) {
+        print('error getting dochazka: $e');
+      }
       rethrow;
     }
   }
 
   Future<void> startDochazka(Dochazka dochazka) async {
-    print('startDochazka called with data: ${dochazka.toMap()}');
+    if (kDebugMode) {
+      print('startDochazka called with data: ${dochazka.toMap()}');
+    }
     try {
       await _db.collection('dochazka').add(dochazka.toMap());
     } catch (e) {
-      print('Error starting dochazka: $e');
+      if (kDebugMode) {
+        print('Error starting dochazka: $e');
+      }
       rethrow;
     }
   }
 
   Future<void> endDochazka(String dochazkaId) async {
-    print('endDochazka called with id: $dochazkaId');
+    if (kDebugMode) {
+      print('endDochazka called with id: $dochazkaId');
+    }
     try {
       await _db.collection('dochazka').doc(dochazkaId).update({
         'datumDo': DateTime.now(),
       });
     } catch (e) {
-      print('Error ending dochazka: $e');
+      if (kDebugMode) {
+        print('Error ending dochazka: $e');
+      }
       rethrow;
     }
   }
@@ -148,16 +199,20 @@ class FirestoreService {
     String zadankaId,
     String poznamkaSchvalovatele,
   ) async {
-    print(
+    if (kDebugMode) {
+      print(
       'approveZadanka called with zadankaId: $zadankaId, poznamkaSchvalovatele: $poznamkaSchvalovatele',
     );
+    }
     try {
       await _db.collection('zadanky').doc(zadankaId).update({
         'schvaleno': 'Ano',
         'poznamkaSchvalovatel': poznamkaSchvalovatele,
       });
     } catch (e) {
-      print('Error approving zadanka: $e');
+      if (kDebugMode) {
+        print('Error approving zadanka: $e');
+      }
       rethrow;
     }
   }
@@ -166,16 +221,20 @@ class FirestoreService {
     String zadankaId,
     String poznamkaSchvalovatele,
   ) async {
-    print(
+    if (kDebugMode) {
+      print(
       'rejectZadanka called with zadankaId: $zadankaId, poznamkaSchvalovatele: $poznamkaSchvalovatele',
     );
+    }
     try {
       await _db.collection('zadanky').doc(zadankaId).update({
         'zruseno': 'Ano',
         'poznamkaSchvalovatel': poznamkaSchvalovatele,
       });
     } catch (e) {
-      print('Error rejecting zadanka: $e');
+      if (kDebugMode) {
+        print('Error rejecting zadanka: $e');
+      }
       rethrow;
     }
   }
@@ -208,9 +267,11 @@ class FirestoreService {
                     Invoice.fromMap(doc.data(), doc.id),
               )
               .toList();
-      print(
+      if (kDebugMode) {
+        print(
         "getInvoicesWithCount: Nová data vydána - ${invoices.length} faktur",
       );
+      }
       return (invoices, invoices.length);
     });
   }
@@ -220,20 +281,30 @@ class FirestoreService {
     try {
       var snapshot = await _db.collection('faktury').get();
       if (snapshot.docs.isEmpty) {
-        print('🔥 Žádné dokumenty ve sbírce "faktury"');
+        if (kDebugMode) {
+          print('🔥 Žádné dokumenty ve sbírce "faktury"');
+        }
       } else {
         for (var doc in snapshot.docs) {
-          print('📄 Dokument: ${doc.id} → ${doc.data()}');
-          print(
+          if (kDebugMode) {
+            print('📄 Dokument: ${doc.id} → ${doc.data()}');
+          }
+          if (kDebugMode) {
+            print(
             'prvniSchvalovatelId: ${doc.data()['prvniSchvalovatelId']}',
-          ); // Přidaný print
-          print(
+          );
+          } // Přidaný print
+          if (kDebugMode) {
+            print(
             'druhySchvalovatelId: ${doc.data()['druhySchvalovatelId']}',
-          ); // Přidaný pri
+          );
+          } // Přidaný pri
         }
       }
     } catch (e) {
-      print('❌ Chyba při načítání faktur: $e');
+      if (kDebugMode) {
+        print('❌ Chyba při načítání faktur: $e');
+      }
     }
   }
 
@@ -261,9 +332,11 @@ class FirestoreService {
       String poznamkaSchvalovatele,
       int employeeId, // Přidáno ID přihlášeného uživatele
       ) async {
-    print(
+    if (kDebugMode) {
+      print(
       'approveInvoice called with invoiceId: $invoiceId, poznamkaSchvalovatele: $poznamkaSchvalovatele, employeeId: $employeeId',
     );
+    }
     try {
       final invoiceDoc = await _db.collection('faktury').doc(invoiceId).get();
       if (!invoiceDoc.exists) {
@@ -291,7 +364,9 @@ class FirestoreService {
         'datumSchvaleni': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error approving invoice: $e');
+      if (kDebugMode) {
+        print('Error approving invoice: $e');
+      }
       rethrow;
     }
   }
@@ -300,9 +375,11 @@ class FirestoreService {
     String invoiceId,
     String poznamkaSchvalovatele,
   ) async {
-    print(
+    if (kDebugMode) {
+      print(
       'rejectInvoice called with invoiceId: $invoiceId, poznamkaSchvalovatele: $poznamkaSchvalovatele',
     );
+    }
     try {
       await _db.collection('faktury').doc(invoiceId).update({
         'stavSchvalovani': 'Zamítnuto',
@@ -310,7 +387,9 @@ class FirestoreService {
         'datumZamintnuti': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error rejecting invoice: $e');
+      if (kDebugMode) {
+        print('Error rejecting invoice: $e');
+      }
       rethrow;
     }
   }
@@ -319,9 +398,11 @@ class FirestoreService {
     String invoiceId,
     String poznamkaSchvalovatele,
   ) async {
-    print(
+    if (kDebugMode) {
+      print(
       'returnInvoice called with invoiceId: $invoiceId, poznamkaSchvalovatele: $poznamkaSchvalovatele',
     );
+    }
     try {
       await _db.collection('faktury').doc(invoiceId).update({
         'stavSchvalovani': 'Vráceno',
@@ -329,13 +410,17 @@ class FirestoreService {
         'datumVraceni': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error returning invoice: $e');
+      if (kDebugMode) {
+        print('Error returning invoice: $e');
+      }
       rethrow;
     }
   }
 
   Future<String> createZadanka(Map<String, dynamic> zadankaData) async {
-    print('createZadanka called with data: $zadankaData');
+    if (kDebugMode) {
+      print('createZadanka called with data: $zadankaData');
+    }
     try {
       DocumentReference docRef = await _db
           .collection('zadanky')
@@ -344,7 +429,9 @@ class FirestoreService {
       await docRef.update({'zadankaId': zadankaId});
       return zadankaId;
     } catch (e) {
-      print('Error creating zadanka: $e');
+      if (kDebugMode) {
+        print('Error creating zadanka: $e');
+      }
       rethrow;
     }
   }
@@ -371,7 +458,9 @@ class FirestoreService {
   }*/
 
   Future<int?> getCountInvoices(int employeeId) async {
-    print('getCountInvoices called');
+    if (kDebugMode) {
+      print('getCountInvoices called');
+    }
     AggregateQuerySnapshot snapshot =
         await _db
             .collection('faktury')
@@ -379,12 +468,16 @@ class FirestoreService {
             .where('stavSchvalovani', isEqualTo: 'Připraveno')
             .count()
             .get();
-    print('Count: ${snapshot.count}');
+    if (kDebugMode) {
+      print('Count: ${snapshot.count}');
+    }
     return snapshot.count;
   }
 
   Future<int?> getCountRequests(int employeeId) async {
-    print('getCountRequests called');
+    if (kDebugMode) {
+      print('getCountRequests called');
+    }
     AggregateQuerySnapshot snapshot =
         await _db
             .collection('zadanky')
@@ -394,7 +487,9 @@ class FirestoreService {
             .where('zruseno', isEqualTo: 'Ne')
             .count()
             .get(); // Změna zde
-    print('Count: ${snapshot.count}');
+    if (kDebugMode) {
+      print('Count: ${snapshot.count}');
+    }
     return snapshot.count;
   }
 
@@ -406,9 +501,11 @@ class FirestoreService {
     String? telefon,
     int? employeeId,
   }) async {
-    print(
+    if (kDebugMode) {
+      print(
       'Hledám objednávky pro employeeId: $employeeId',
-    ); // Přidáno pro kontrolu
+    );
+    } // Přidáno pro kontrolu
     try {
       // 1. Sestavíme dotazy pro jednotlivé kategorie (s logikou OR pro zákazníka, IČO, DIČ a telefon)
       List<Future<QuerySnapshot>> queryFutures = [];
@@ -574,7 +671,9 @@ class FirestoreService {
       }
       return objednavky.toSet().toList();
     } catch (e) {
-      print('Error searching objednavky: $e');
+      if (kDebugMode) {
+        print('Error searching objednavky: $e');
+      }
       return [];
     }
   }

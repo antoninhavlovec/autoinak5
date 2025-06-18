@@ -118,7 +118,7 @@ class DetailObjednavkyPage extends StatelessWidget {
                   }
                 },
                 child: Text(
-                  'Email: ${objednavka.inoSrvszakHlavickaEmail ?? 'Není k dispozici'}',
+                  'Email: ${objednavka.inoSrvszakHlavickaEmail}',
                   style: TextStyle(
                     color: Colors.blue,
                     decoration: TextDecoration.underline,

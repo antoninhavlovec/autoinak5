@@ -1,4 +1,5 @@
 import 'package:autoinak5/services/firestore_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:autoinak5/models/invoice.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,12 +23,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
   Future<int?> _loadEmployeeId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? employeeIdString = prefs.getString('employeeId');
-    print('invoices_page _loadEmployeeId called with employeeIdString: $employeeIdString');
+    if (kDebugMode) {
+      print('invoices_page _loadEmployeeId called with employeeIdString: $employeeIdString');
+    }
     if (employeeIdString == null) {
       return null;
     }
     final intEmployeeId = int.tryParse(employeeIdString);
-    print('intEmployeeId: $intEmployeeId');
+    if (kDebugMode) {
+      print('intEmployeeId: $intEmployeeId');
+    }
     return intEmployeeId;
   }
 
@@ -36,7 +41,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
     final employeeId = await _loadEmployeeId(); // Použij await pro získání hodnoty
     if (employeeId == null) {
       // Zpracování případu, kdy se ID nepodařilo načíst (např. zobraz hlášku)
-      print('Chyba: Nepodařilo se načíst ID zaměstnance.');
+      if (kDebugMode) {
+        print('Chyba: Nepodařilo se načíst ID zaměstnance.');
+      }
       return;
     }
     showDialog(
@@ -219,7 +226,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   return const Center(child: Text('Žádné faktury nenalezeny'));
                 }
                 final invoices = data.$1; // Přístup k seznamu faktur pomocí data.$1
-                print("Invoicec_page - Seznam faktur aktualizován - ${invoices.length} faktur");
+                if (kDebugMode) {
+                  print("Invoicec_page - Seznam faktur aktualizován - ${invoices.length} faktur");
+                }
                 _allInvoices = invoices; // Uložíme všechny faktury
                 return ListView.builder(
                   itemCount: invoices.length,
@@ -406,7 +415,6 @@ class _InvoicesPageState extends State<InvoicesPage> {
                       ),
                       )
                     );
-                    return null;
                   },
                 );
               },

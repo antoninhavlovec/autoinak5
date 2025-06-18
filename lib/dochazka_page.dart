@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,14 +45,18 @@ class _DochazkaPageState extends State<DochazkaPage> {
   }
 
   _loadDochazka() {
-    print('_loadDochazka started');
+    if (kDebugMode) {
+      print('_loadDochazka started');
+    }
     if (employeeId != null) {
       final now = DateTime.now();
       final firstDayOfMonth = DateTime(now.year, now.month, 1);
       final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      print(
+      if (kDebugMode) {
+        print(
         'Query: zamestnanecId == $employeeId && datumOd >= $firstDayOfMonth && datumOd <= $lastDayOfMonth',
       );
+      }
       dochazkaCollection
           .where('zamestnanecId', isEqualTo: employeeId)
           .where('datumOd', isGreaterThanOrEqualTo: firstDayOfMonth)
@@ -59,12 +64,20 @@ class _DochazkaPageState extends State<DochazkaPage> {
           .orderBy('datumOd', descending: true)
           .snapshots()
           .listen((snapshot) {
-            print('snapshot: ${snapshot.docs}');
+            if (kDebugMode) {
+              print('snapshot: ${snapshot.docs}');
+            }
             for (var doc in snapshot.docs) {
-              print('doc.data: ${doc.data()}');
+              if (kDebugMode) {
+                print('doc.data: ${doc.data()}');
+              }
               Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
-              print('map[datumOd]: ${map['datumOd']}');
-              print('map[datumDo]: ${map['datumDo']}');
+              if (kDebugMode) {
+                print('map[datumOd]: ${map['datumOd']}');
+              }
+              if (kDebugMode) {
+                print('map[datumDo]: ${map['datumDo']}');
+              }
             }
             setState(() {
               dochazkaList =
@@ -90,7 +103,9 @@ class _DochazkaPageState extends State<DochazkaPage> {
                     ),
               );
             });
-            print('_loadDochazka end');
+            if (kDebugMode) {
+              print('_loadDochazka end');
+            }
           });
     }
   }
@@ -101,9 +116,11 @@ class _DochazkaPageState extends State<DochazkaPage> {
 
     if (employeeId != null) {
       Timestamp timestamp = Timestamp.fromDate(DateTime.now());
-      print(
+      if (kDebugMode) {
+        print(
         'startDochazka add data: {datumOd: $timestamp, nazevPodkladu: $nazevPodkladu,podklad: $podklad,zamestnanecId: $employeeId,zamestnanecJmeno: $zamestnanecJmeno}',
       );
+      }
       DocumentReference docRef = await dochazkaCollection.add({
         'datumOd': timestamp,
         'nazevPodkladu': nazevPodkladu,
@@ -112,9 +129,11 @@ class _DochazkaPageState extends State<DochazkaPage> {
         'zamestnanecJmeno': zamestnanecJmeno,
       });
       setState(() {
-        print(
+        if (kDebugMode) {
+          print(
           'startDochazka new data: {firestoreId: ${docRef.id}, datumOd: $timestamp, nazevPodkladu:$nazevPodkladu,podklad: $podklad, zamestnanecId: $employeeId,zamestnanecJmeno: $zamestnanecJmeno}',
         );
+        }
         currentDochazka = Dochazka(
           firestoreId: docRef.id,
           datumOd: Timestamp.fromDate(DateTime.now()),

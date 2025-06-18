@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:autoinak5/dochazka_page.dart';
 import 'package:autoinak5/zadanky_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,6 +32,9 @@ import 'services/firestore_service.dart';
 ///
 /// verze 20250408
 /// přidány objednávky, vyhledávání
+///
+/// verze 20250613
+/// přidáno zohlednění témat nastavených v telefonu
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -126,7 +130,6 @@ class MyApp extends StatelessWidget {
       );
     }
   }
-
 
 class MyHomePage extends StatefulWidget {
   final FirestoreService firestoreService; // Přidali jsme proměnnou
@@ -297,9 +300,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _updateNavigationItems(bool showInvoices) {
-    print('_updateNavigationItems called');
-    print('ShowInvoices: $showInvoices');
-    print('ShowAttendance: $_showAttendance');
+    if (kDebugMode) {
+      print('_updateNavigationItems called');
+    }
+    if (kDebugMode) {
+      print('ShowInvoices: $showInvoices');
+    }
+    if (kDebugMode) {
+      print('ShowAttendance: $_showAttendance');
+    }
     List<Widget> newChildren = [];
     List<BottomNavigationBarItem> newBottomNavBarItems = [];
 
@@ -385,9 +394,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildBadge(Widget icon, int count) {
-    print('_buildBadge called with count: $count');
-    print('_unapprovedInvoicesCount: $_unapprovedInvoicesCount');
-    print('_unapprovedRequestsCount: $_unapprovedRequestsCount');
+    if (kDebugMode) {
+      print('_buildBadge called with count: $count');
+    }
+    if (kDebugMode) {
+      print('_unapprovedInvoicesCount: $_unapprovedInvoicesCount');
+    }
+    if (kDebugMode) {
+      print('_unapprovedRequestsCount: $_unapprovedRequestsCount');
+    }
     return Stack(
       children: [
         icon,
@@ -409,7 +424,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onTabTapped(int index) {
-    print('onTabTapped called with index: $index');
+    if (kDebugMode) {
+      print('onTabTapped called with index: $index');
+    }
     setState(() {
       _currentIndex = index;
     });
@@ -417,7 +434,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print('MyHomePage build called with _currentIndex: $_currentIndex');
+    if (kDebugMode) {
+      print('MyHomePage build called with _currentIndex: $_currentIndex');
+    }
 
     if (!_dataLoaded) {
       return const Center(child: CircularProgressIndicator());
@@ -509,7 +528,9 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    print('initState called');
+    if (kDebugMode) {
+      print('initState called');
+    }
     _loadEmployeeId();
     _loadShowInvoices();
     _loadShowAttendance(); // Načtení stavu docházky
@@ -565,14 +586,22 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadEmployeeId() async {
-    print('_loadEmployeeId called');
+    if (kDebugMode) {
+      print('_loadEmployeeId called');
+    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('SharedPreferences instance obtained');
+    if (kDebugMode) {
+      print('SharedPreferences instance obtained');
+    }
     String? employeeId = prefs.getString('employeeId');
-    print('main _loadEmployeeId called with employeeId from prefs: $employeeId');
+    if (kDebugMode) {
+      print('main _loadEmployeeId called with employeeId from prefs: $employeeId');
+    }
     if (employeeId != null) {
       setState(() {
-        print('setState called');
+        if (kDebugMode) {
+          print('setState called');
+        }
         _employeeIdController.text = employeeId;
       });
     }
@@ -594,7 +623,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('build called');
+    if (kDebugMode) {
+      print('build called');
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nastavení'),
